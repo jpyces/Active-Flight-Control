@@ -16,6 +16,7 @@ AHRS and PID controllers are currently being developed in MATLAB and Simulink, a
 
 Breadboarding these Components:
 ![Breadboarded Sensors](assets/2026-09-06_breadboarded.jpeg)
+Sensors breadboarded for initial bring-up
 
 ## Code
 

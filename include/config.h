@@ -10,7 +10,7 @@ pin defs, constants, baud rates, PID gains
 // but if these values are sent as references, could lead to weird differing state issues
 
 // GPS
-inline constexpr HardwareSerial &GNSS_SERIAL = Serial7; // Serial7: TX7=29, RX7=28
+inline constexpr HardwareSerial &GNSS_SERISAL = Serial7; // Serial7: TX7=29, RX7=28
 inline constexpr int BOOT_SEQ_DELAY = 5000; // in ms
 
 // pins
@@ -19,7 +19,7 @@ inline constexpr int SERVO1_PIN = 2;
 inline constexpr int SERVO2_PIN = 3;
 inline constexpr int SERVO3_PIN = 4;
 inline constexpr int SERVO4_PIN = 5;
-inline constexpr int PYRO_PIN = 6; // gate drive to MOSFET, not direct pyro power — TBD later
+inline constexpr int PYRO_PIN = 6; // gate drive to MOFET, not direct pyro power — TBD later
 
 // Radio
 inline constexpr HardwareSerial &RADIO_SERIAL = Serial5; // Serial5: TX5=20, RX5=21

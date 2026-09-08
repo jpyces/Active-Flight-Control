@@ -1,0 +1,267 @@
+<mxfile host="Electron">
+  <diagram name="Page-1" id="MZi6FskkCjtTxl1RwlYy">
+    <mxGraphModel dx="2338" dy="960" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-4" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="Gg6BDCixTXeUeZThGQ2w-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="OFF" vertex="1">
+          <mxGeometry height="60" width="120" x="40" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-9" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="Gg6BDCixTXeUeZThGQ2w-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ON" vertex="1">
+          <mxGeometry height="60" width="110" x="290" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-5" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Powered" vertex="1">
+          <mxGeometry height="30" width="60" x="190" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-11" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Memory Check" vertex="1">
+          <mxGeometry height="60" width="120" x="495" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-8" parent="1" style="text;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;color: rgb(255, 255, 255); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(27, 29, 30); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;verify flash and SD card read/write&lt;/span&gt;" vertex="1">
+          <mxGeometry height="40" width="130" x="490" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Sensor INIT" vertex="1">
+          <mxGeometry height="60" width="120" x="700" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Initialize all sensors, test all connections, determine sensor health and availabilities" vertex="1">
+          <mxGeometry height="70" width="140" x="690" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-18" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="620" y="490" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Calibration Check" vertex="1">
+          <mxGeometry height="60" width="120" x="700" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-14" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Read sensor and motor calibration data from memory (sd or flash). Manually calibrate if necessary and save those values" vertex="1">
+          <mxGeometry height="70" width="140" x="690" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-15" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.642;entryDx=0;entryDy=0;entryPerimeter=0;" target="Gg6BDCixTXeUeZThGQ2w-13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="870" y="330" />
+              <mxPoint x="870" y="498.5" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-21" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="DISARMED" vertex="1">
+          <mxGeometry height="60" width="120" x="285" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-17" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Motors do not react to any input" vertex="1">
+          <mxGeometry height="30" width="120" x="285" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-41" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-27">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-20" y="490" />
+              <mxPoint x="-20" y="690" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-19" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Motor Check" vertex="1">
+          <mxGeometry height="60" width="120" x="40" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-20" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Pre-arm check. Test each motor individually and all together as well to see if motors even connected and working" vertex="1">
+          <mxGeometry height="90" width="130" x="35" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-22" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="AUTO" vertex="1">
+          <mxGeometry height="30" width="60" x="418" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-23" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="AUTO" vertex="1">
+          <mxGeometry height="30" width="60" x="620" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-24" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="AUTO" vertex="1">
+          <mxGeometry height="30" width="60" x="860" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-25" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="AUTO" vertex="1">
+          <mxGeometry height="30" width="60" x="630" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-26" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Arming Request" vertex="1">
+          <mxGeometry height="30" width="100" x="173" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-43" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-27" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ARMED" vertex="1">
+          <mxGeometry height="60" width="120" x="40" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-28" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Motors ready for use" vertex="1">
+          <mxGeometry height="30" width="120" x="40" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-31" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Flight" vertex="1">
+          <mxGeometry height="60" width="120" x="290" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-32" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Drone in Air" vertex="1">
+          <mxGeometry height="30" width="120" x="290" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-35" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="AUTO" vertex="1">
+          <mxGeometry height="30" width="60" x="-80" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-39" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-36" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="State Estimation Init" vertex="1">
+          <mxGeometry height="60" width="120" x="500" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-37" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Start complimentary filter. Once that converges, feed those state values to state estimator as baseline and wait until truth convergence" vertex="1">
+          <mxGeometry height="70" width="140" x="490" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-40" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="AUTO" vertex="1">
+          <mxGeometry height="30" width="60" x="423" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-44" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="When drone move" vertex="1">
+          <mxGeometry height="30" width="110" x="165" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-45" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="State is actively changing beyond a threshold and altitude not seaLevel" vertex="1">
+          <mxGeometry height="60" width="110" x="170" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-46" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Potentially time-based&lt;div&gt;Resets PID&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="100" x="170" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-50" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 32px;&quot;&gt;System State Machine&lt;/span&gt;" vertex="1">
+          <mxGeometry height="70" width="350" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-51" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 32px;&quot;&gt;Failure/Failsafes&lt;/span&gt;" vertex="1">
+          <mxGeometry height="70" width="270" y="815" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-56" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-52" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="Gg6BDCixTXeUeZThGQ2w-55">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-52" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Flight" vertex="1">
+          <mxGeometry height="60" width="120" x="273" y="885" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-54" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 19px;&quot;&gt;1. Altitude over-exceed&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="205" x="60" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-61" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-59">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-55" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="FAILSAFE_DESCENT" vertex="1">
+          <mxGeometry height="60" width="120" x="550" y="885" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-57" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="When drone real altitude exceeds limts (ex - drone really at 20 feet when need to be at 5 feet)&amp;nbsp;" vertex="1">
+          <mxGeometry height="80" width="120" x="410" y="920" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-58" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Hard set net thrust such drone descends by its own weight. Roll, Yaw, Pitch PID running still running in stabilization mode" vertex="1">
+          <mxGeometry height="90" width="120" x="550" y="945" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-59" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="DISARMED" vertex="1">
+          <mxGeometry height="60" width="120" x="800" y="885" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-62" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="When sealevel = altitude or hit ground" vertex="1">
+          <mxGeometry height="40" width="110" x="680" y="925" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-75" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-64" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-70">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-64" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Flight" vertex="1">
+          <mxGeometry height="60" width="120" x="361.5" y="1095" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-74" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-65" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-72">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-65" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 19px;&quot;&gt;2.1 Attitude Critical Sensor loss&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="276.5" x="60" y="1095" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-70" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Manual Control/DISARMED" vertex="1">
+          <mxGeometry height="60" width="120" x="570" y="1095" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-72" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Critical sensor (Gyro, Accel) loss" vertex="1">
+          <mxGeometry height="40" width="130" x="170" y="1125" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-77" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="If manual control available, do that. if not, its over" vertex="1">
+          <mxGeometry height="60" width="120" x="570" y="1155" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-78" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-79" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="Gg6BDCixTXeUeZThGQ2w-82">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-79" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Flight" vertex="1">
+          <mxGeometry height="60" width="120" x="273" y="1390" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-80" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 19px;&quot;&gt;3. RC Drop - if available&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="205" x="60" y="1405" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-81" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-82" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-84">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-82" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="FAILSAFE_DESCENT" vertex="1">
+          <mxGeometry height="60" width="120" x="550" y="1390" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-83" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="RC Drop" vertex="1">
+          <mxGeometry height="40" width="110" x="410" y="1410" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-84" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="DISARMED" vertex="1">
+          <mxGeometry height="60" width="120" x="800" y="1390" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-85" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="When sealevel = altitude or hit ground" vertex="1">
+          <mxGeometry height="40" width="110" x="680" y="1430" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-86" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-87" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-90">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-87" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Flight" vertex="1">
+          <mxGeometry height="60" width="120" x="276.5" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-88" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-89" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-91">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-89" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 19px;&quot;&gt;4. Motor(s) loss&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="140" x="60" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-90" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="DISARM" vertex="1">
+          <mxGeometry height="60" width="120" x="485" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-91" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Commanded vs actual RPM mismatch (threshold)" vertex="1">
+          <mxGeometry height="55" width="140" x="123" y="1557.5" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-92" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Its over" vertex="1">
+          <mxGeometry height="30" width="120" x="485" y="1570" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-93" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-94" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-97">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-94" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Flight" vertex="1">
+          <mxGeometry height="60" width="120" x="361.5" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-95" edge="1" parent="1" source="Gg6BDCixTXeUeZThGQ2w-96" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-98">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-96" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 19px;&quot;&gt;2.2 Attitude Estimate loss&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="230.75" x="60" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-97" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="FAILSAFE_DESCENT - COMP" vertex="1">
+          <mxGeometry height="60" width="120" x="570" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-98" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Numerical Instability, but sensors NOMINAL" vertex="1">
+          <mxGeometry height="40" width="140" x="160" y="1270" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-99" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Use complimentary filter for attitude" vertex="1">
+          <mxGeometry height="55" width="120" x="570" y="1300" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-100" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Gg6BDCixTXeUeZThGQ2w-101">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="690" y="1270" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-101" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="DISARMED" vertex="1">
+          <mxGeometry height="60" width="120" x="820" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="Gg6BDCixTXeUeZThGQ2w-102" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="When sealevel = altitude or hit ground" vertex="1">
+          <mxGeometry height="40" width="110" x="700" y="1280" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

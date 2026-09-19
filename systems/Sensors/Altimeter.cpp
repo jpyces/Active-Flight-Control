@@ -1,7 +1,8 @@
-#include <Wire.h>
 #include <SPI.h>
-#include <altimeter.h>
-#include <config.h>
+#include "Altimeter.h"
+#include "config.h"
+
+using namespace gnc;
 
 // Scanner detected at 0x7E, but 0x76 working???
 static constexpr auto ALTIMETER_BMP280_ADDRESS = 0x76;

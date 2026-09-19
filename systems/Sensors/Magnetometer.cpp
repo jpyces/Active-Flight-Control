@@ -1,10 +1,11 @@
 /*
 Handles magnetometer interaction stuff directly.
 */
-
-#include "magnetometer.h"
-
 #include <cmath>
+#include "Magnetometer.h"
+#include "config.h"
+
+using namespace gnc;
 
 constexpr float Magnetometer::SENS_XY_UT_PER_LSB[8][4];
 constexpr float Magnetometer::SENS_Z_UT_PER_LSB[8][4];

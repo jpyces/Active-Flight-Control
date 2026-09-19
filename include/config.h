@@ -6,7 +6,7 @@ pin defs, constants, baud rates, PID gains
 
 #include "Wire.h"
 
-// Inlines make it so that these constexpr are only created once and available in all translation units - generally not a problem, 
+// Inlines make it so that these constexpr are only created once and available in all translation units - generally not a problem,
 // but if these values are sent as references, could lead to weird differing state issues
 
 // GPS
@@ -25,7 +25,6 @@ inline constexpr int PYRO_PIN = 6; // gate drive to MOFET, not direct pyro power
 inline constexpr HardwareSerial &RADIO_SERIAL = Serial5; // Serial5: TX5=20, RX5=21
 inline constexpr int RADIO_M0_PIN = 22;
 inline constexpr int RADIO_M1_PIN = 23;
-
 
 // I2C buses — avionics bay, one sensor per bus (no contention)
 inline constexpr TwoWire &IMU_WIRE = Wire;   // SDA=18, SCL=19 -> LSM6DSO IMU

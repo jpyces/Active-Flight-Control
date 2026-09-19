@@ -1,4 +1,8 @@
-#include "gnss.h"
+#include "Gnss.h"
+#include <cmath>
+#include "config.h"
+
+using namespace gnc;
 
 GNSS::GNSS()
     : gnss(), gnc_DEBUG(false), status(SensorStatus::UNINITIALIZED),

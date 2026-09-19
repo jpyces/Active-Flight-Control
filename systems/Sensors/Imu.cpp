@@ -1,9 +1,10 @@
 #include <SPI.h>
-#include "Wire.h"
 #include <cmath>
 
-#include "imu.h"
+#include "Imu.h"
 #include "config.h"
+
+using namespace gnc;
 
 Imu::Imu()
     : imu(), status(SensorStatus::UNINITIALIZED), consecutiveFailures(0), consecutiveSuccesses(0)
@@ -11,13 +12,13 @@ Imu::Imu()
 };
 
 bool Imu::begin() {
-    bool ok = imu.begin(LSM6DSO_IMU_ADDRESS, IMU_WIRE);
+    bool ok = imu.begin(kLsm6dsoImuAddress, IMU_WIRE);
     status = ok ? SensorStatus::NOMINAL : SensorStatus::FAILED;
     return ok;
 };
 
 SensorStatus Imu::checkHealth() {
-    IMU_WIRE.beginTransmission(LSM6DSO_IMU_ADDRESS);
+    IMU_WIRE.beginTransmission(kLsm6dsoImuAddress);
     bool ack = (IMU_WIRE.endTransmission() == 0);
 
     if(ack) {
@@ -96,7 +97,7 @@ float Imu::getAccelZG() {
     return imu.readFloatAccelZ();
 }
 
-Imu::Vector3 Imu::getAccelG() {
+Vector3 Imu::getAccelG() {
     return {
         getAccelXG(),
         getAccelYG(),
@@ -121,7 +122,7 @@ float Imu::getGyroZDps() {
     return imu.readFloatGyroZ();
 }
 
-Imu::Vector3 Imu::getGyroDps() {
+Vector3 Imu::getGyroDps() {
     return {
         getGyroXDps(),
         getGyroYDps(),

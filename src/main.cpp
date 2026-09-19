@@ -3,21 +3,23 @@
 #include "LittleFS.h"
 
 #include "config.h"
-#include "altimeter.h"
-#include "imu.h"
-#include "gnss.h"
-#include "magnetometer.h" // matches lowercase convention of the other sensor headers above —
+#include "Altimeter.h"
+#include "Imu.h"
+#include "Gnss.h"
+#include "Magnetometer.h" // matches lowercase convention of the other sensor headers above —
                           // rename Magnetometer.h/.cpp to magnetometer.h/.cpp if they aren't already
+
+using namespace gnc;
 
 // Globals
 LittleFS_QSPI myfs; // for flash unit test
 // ADD VERSIONING HERE
 
 // Objects/Structs
-Altimeter alti = Altimeter();
-Imu imu = Imu();
-GNSS gnss = GNSS();
-Magnetometer mag = Magnetometer();
+Altimeter alti;
+Imu imu;
+GNSS gnss;
+Magnetometer mag;
 GnssData gnss_data;
 
 // Sensor global data

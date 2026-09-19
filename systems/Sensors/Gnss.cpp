@@ -72,6 +72,7 @@ bool GNSS::begin()
     // Give the module its one-time grace window to acquire a first fix (see header comment)
     // before "no good fix yet" starts counting toward DEGRADED.
     hasEverFixed = false;
+    hasValidFix = false;
     firstFixDeadlineMillis = millis() + FIRST_FIX_GRACE_MS;
     status = SensorStatus::NOMINAL;
 
@@ -156,6 +157,7 @@ GnssData GNSS::getData(GnssData d)
     gnss.getPVT();
 
     d.valid = gnss.getGnssFixOk() && (gnss.getFixType() >= 3);
+    hasValidFix = d.valid;
 
     d.latitude = gnss.getLatitude() / 1e7;
     d.longitude = gnss.getLongitude() / 1e7;
@@ -188,4 +190,9 @@ GnssData GNSS::getData(GnssData d)
     }
 
     return d;
+}
+
+bool GNSS::hasFix() const
+{
+    return hasValidFix;
 }

@@ -68,6 +68,53 @@ unsigned long lastLedToggle = 0;
 bool ledState = false;
 constexpr unsigned long LED_TOGGLE_INTERVAL_MS = 1000; // toggles once a second -> on/off every 1s
 
+bool showWakeUpAscii = true;
+
+void wakeUpAscii()
+{
+
+    Serial.println(F(""));
+    Serial.println(F("        \\   |   /                     \\   |   /"));
+    Serial.println(F("         \\  Y  /                       \\  Y  /"));
+    Serial.println(F("          \\ | /                         \\ | /"));
+    Serial.println(F("           \\|/                           \\|/"));
+    Serial.println(F("        ----O----                     ----O----"));
+    Serial.println(F("           /|\\                           /|\\"));
+    Serial.println(F("          / | \\                         / | \\"));
+    Serial.println(F("         /  |  \\                       /  |  \\"));
+    Serial.println(F("        [=======]                     [=======]"));
+    Serial.println(F("           ||                             ||"));
+    Serial.println(F("           ||_____                   _____||"));
+    Serial.println(F("                  \\                 /"));
+    Serial.println(F("                   \\_______________/"));
+    Serial.println(F("                   |               |"));
+    Serial.println(F("                   |               |"));
+    Serial.println(F("                   |               |"));
+    Serial.println(F("                   |               |"));
+    Serial.println(F("                   |               |"));
+    Serial.println(F("                   |_______________|"));
+    Serial.println(F("                   /                \\"));
+    Serial.println(F("                  /                  \\"));
+    Serial.println(F("           ||_____|                 |_____||"));
+    Serial.println(F("           ||                             ||"));
+    Serial.println(F("        [=======]                     [=======]"));
+    Serial.println(F("         \\  |  /                       \\  |  /"));
+    Serial.println(F("          \\ | /                         \\ | /"));
+    Serial.println(F("           \\|/                           \\|/"));
+    Serial.println(F("        ----O----                     ----O----"));
+    Serial.println(F("           /|\\                           /|\\"));
+    Serial.println(F("          / Y \\                         / Y \\"));
+    Serial.println(F("         /  |  \\                       /  |  \\"));
+    Serial.println(F("        /   |   \\                     /   |   \\"));
+    Serial.println(F(""));
+    Serial.println(F("   ====================================================="));
+    Serial.println(F("   >>>            INITIALIZING SYSTEM...            <<<"));
+    Serial.println(F("   ====================================================="));
+    Serial.println(F(""));
+
+    delay(300);
+}
+
 void wakeUp()
 {
     // Setting Radio mode pins to 0 to boot into normal mode - connection to software means it is configurable in the future
@@ -101,6 +148,11 @@ void wakeUp()
         Serial.print(". ");
         bootSecondCount--;
         delay(400);
+    }
+
+    // Fun
+    if (showWakeUpAscii){
+        wakeUpAscii();
     }
 
     // Activate I2C lines - some libraries do it, but preemptive activation ensures that they work

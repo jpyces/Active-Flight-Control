@@ -115,6 +115,7 @@ namespace gnc
         // grace period to get its FIRST fix before "no good fix yet" starts counting against it.
         // Losing a fix it already had is a different, real signal and is never grace-windowed.
         bool hasEverFixed;
+        bool hasValidFix;
         unsigned long firstFixDeadlineMillis;
         static constexpr unsigned long FIRST_FIX_GRACE_MS = 45000; // generous vs. typical cold-start lock times
 
@@ -161,6 +162,11 @@ namespace gnc
         // getMagSample() for the same reason.
         SensorStatus checkHealth();
         SensorStatus getStatus() const;
+        bool hasFix() const; // true iff the most recent read had fixType>=3 and getGnssFixOk() —
+                             // data VALIDITY, independent of checkHealth()'s health/liveness verdict.
+                             // A cold-start acquisition window can be status()==NOMINAL with hasFix()==false
+                             // (the receiver is behaving correctly; there's just no usable fix yet) —
+                             // consumers that need position data must check hasFix(), not getStatus().
         HealthDiagnostics getHealthDiagnostics() const;
 
         // getters

@@ -1,10 +1,265 @@
-<mxfile host="Electron">
-  <diagram name="Page-1" id="PBvZJhiYzZujNfcewoKh">
-    <mxGraphModel dx="1414" dy="912" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
-      <root>
-        <mxCell id="0" />
-        <mxCell id="1" parent="0" />
-      </root>
-    </mxGraphModel>
-  </diagram>
+<mxfile host="65bd71144e">
+    <diagram name="Page-1" id="PBvZJhiYzZujNfcewoKh">
+        <mxGraphModel dx="2234" dy="615" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1620" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="s_imu" value="IMU (LSM6DSO)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="40" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_mag" value="Magnetometer (MLX90393)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="220" y="40" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_baro" value="Barometer (BMP280)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="40" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_gnss" value="GNSS (NEO-F10N)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="580" y="40" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_imu" value="Imu" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="140" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_mag" value="Magnetometer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="220" y="140" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_alt" value="Altimeter" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="140" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_gnss" value="Gnss&#xa;(position/velocity: logging only in M1)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="580" y="140" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="d_sensorreadings" value="SensorReadings&#xa;{accel, gyro, mag, baroAltitude, gnssPos/Vel, *Status}" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="240" width="700" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="box_estimation" value="Estimation — StateEstimator (Milestone 1)" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="320" width="700" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_comp" value="ComplementaryFilter&#xa;(seed / fallback AHRS)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="375" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_madgwick" value="Madgwick Full / NoMag&#xa;(primary AHRS)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="375" width="220" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_vkf" value="VerticalKF&#xa;(altitude, 3-state)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="375" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="d_stateestimate" value="StateEstimate&#xa;{angles, rates, altitude, verticalVelocity}" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="550" width="700" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="fn_adapter" value="stateEstimateToControllerMeasurements()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="630" width="700" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="d_ctrlmeas" value="ControllerMeasurements&#xa;{angle, rate, altitude}" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="700" width="340" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="d_setpoints" value="Setpoints&#xa;M1: external RC / Ground Station" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="700" width="280" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="box_control" value="Control — AttitudeAltitudeController (Milestone 1)" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="780" width="810" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="tVF2zUr4Cbtd92Bf0cca-1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="c_anglepid" target="c_ratepid" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="tVF2zUr4Cbtd92Bf0cca-2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="c_anglepid" target="c_ratepid" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="c_anglepid" value="Angle PID x3&#xa;(Roll/Pitch/Yaw)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="860" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="c_ratepid" value="Rate PID x3&#xa;(Roll/Pitch/Yaw)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="340" y="860" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="c_altpid" value="Altitude PID&#xa;(+ hover feedforward)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="830" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="c_mixmotors" value="mixMotors()&#xa;(normalize + saturate)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="970" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="d_motorcmds" value="Motor Commands [0,1] x4" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="1085" width="340" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_esc" value="ESC / Motor Driver&#xa;(PWM / DShot)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="510" y="1080" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_motors" value="Motors x4 (quad-X)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="730" y="1080" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="fsm" value="FlightStateMachine&#xa;(arm/disarm sequence, failsafe branches, mode transitions)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+                    <mxGeometry x="1050" y="300" width="300" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="core" value="Core&#xa;Vector3, Quaternion" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="1070" y="460" width="300" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="mainloop" value="main.cpp — fixed-rate control loop&#xa;(elapsedMicros, wires everything together)" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="1170" width="380" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;Blue=hardware   Green=adapter/actuator driver   Yellow=data struct&lt;br&gt;Red=estimation   Orange=control   Purple=FSM   Gray=core / cross-cutting&lt;br&gt;Dashed = cross-cutting reference or reset() call&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fillColor=none;strokeColor=#999999;dashed=1;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1000" y="550" width="500" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="box_m2" value="Milestone 2 — Future Scope (GPS-capable nav; design only, not built yet)" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=8;fontStyle=1;dashed=1;fillColor=#f5f5f5;strokeColor=#999999;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="1290" width="1080" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="m2_ukf" value="16-state joint UKF&#xa;(position, velocity, attitude quaternion,&#xa;gyro/accel biases)&#xa;replaces StateEstimator&#39;s internals;&#xa;same StateEstimate output contract" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#eeeeee;strokeColor=#999999;fontColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="1340" width="340" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="m2_pathfinder" value="PathfinderController&#xa;(target waypoint + StateEstimate&#xa;→ Setpoints)&#xa;feeds AttitudeAltitudeController exactly&#xa;like a ground-station Setpoints today" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#eeeeee;strokeColor=#999999;fontColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="1340" width="340" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_m2_1" value="StateEstimate (consumed)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;fontSize=10;fontColor=#666666;strokeColor=#999999;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="m2_ukf" target="m2_pathfinder" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="s_imu" target="a_imu" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="s_mag" target="a_mag" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="s_baro" target="a_alt" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="s_gnss" target="a_gnss" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.114;entryY=0;entryDx=0;entryDy=0;" parent="1" source="a_imu" target="d_sensorreadings" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.371;entryY=0;entryDx=0;entryDy=0;" parent="1" source="a_mag" target="d_sensorreadings" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.629;entryY=0;entryDx=0;entryDy=0;" parent="1" source="a_alt" target="d_sensorreadings" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.886;entryY=0;entryDx=0;entryDy=0;" parent="1" source="a_gnss" target="d_sensorreadings" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.171;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="d_sensorreadings" target="e_comp" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="d_sensorreadings" target="e_madgwick" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.829;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="d_sensorreadings" target="e_vkf" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e12" value="seed / fallback" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.171;entryY=0;entryDx=0;entryDy=0;" parent="1" source="e_comp" target="d_stateestimate" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e13" value="primary (Nominal)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="e_madgwick" target="d_stateestimate" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14" value="altitude, verticalVelocity" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.829;entryY=0;entryDx=0;entryDy=0;" parent="1" source="e_vkf" target="d_stateestimate" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="d_stateestimate" target="fn_adapter" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="fn_adapter" target="d_ctrlmeas" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=-0.002;entryY=0.639;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="d_ctrlmeas" target="c_anglepid" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint y="725"/>
+                            <mxPoint y="898.36"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;" parent="1" source="d_ctrlmeas" target="c_altpid" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="380" y="720"/>
+                            <mxPoint x="440" y="720"/>
+                            <mxPoint x="440" y="848"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0;exitY=0.7;exitDx=0;exitDy=0;entryX=1;entryY=0.3;entryDx=0;entryDy=0;" parent="1" source="d_setpoints" target="c_anglepid" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="390" y="735"/>
+                            <mxPoint x="390" y="848"/>
+                            <mxPoint x="280" y="848"/>
+                            <mxPoint x="280" y="878"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.6;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="d_setpoints" target="c_altpid" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=10;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c_anglepid" target="c_ratepid" edge="1">
+                    <mxGeometry x="0.027" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="tVF2zUr4Cbtd92Bf0cca-3" value="desiredRate" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="e21" connectable="0" vertex="1">
+                    <mxGeometry x="0.1757" y="-2" relative="1" as="geometry">
+                        <mxPoint x="-8" y="8" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e22" value="torque" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="c_ratepid" target="c_mixmotors" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e23" value="throttle trim" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=10;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c_altpid" target="c_mixmotors" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="580" y="860"/>
+                            <mxPoint x="580" y="975"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="c_mixmotors" target="d_motorcmds" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="380" y="1050"/>
+                            <mxPoint x="220" y="1050"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="d_motorcmds" target="a_esc" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="a_esc" target="s_motors" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e27" value="isConverged() / isDegraded()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;fontSize=10;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;" parent="1" source="box_estimation" target="fsm" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e28" value="reset()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;fontSize=10;exitX=0;exitY=0.7;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="fsm" target="box_estimation" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="895" y="384"/>
+                            <mxPoint x="895" y="420"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e31" value="used by" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;fontSize=10;exitX=0;exitY=0.8;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" parent="1" source="core" target="box_control" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="920" y="516"/>
+                            <mxPoint x="920" y="842.55"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="tVF2zUr4Cbtd92Bf0cca-9" value="reset()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;fontSize=10;entryX=0.964;entryY=-0.003;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="box_control" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="820" y="646"/>
+                        </Array>
+                        <mxPoint x="820" y="420" as="sourcePoint"/>
+                        <mxPoint x="830" y="646" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="tVF2zUr4Cbtd92Bf0cca-11" value="used by" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;fontSize=10;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" parent="1" target="box_estimation" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1000" y="470"/>
+                        </Array>
+                        <mxPoint x="1000" y="510" as="sourcePoint"/>
+                        <mxPoint x="1190" y="1097" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
 </mxfile>

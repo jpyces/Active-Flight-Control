@@ -11,7 +11,8 @@ Handles reading directly from the GPS with declarations to make stuff public
 #include "sensor_universal.h"
 #include "config.h"
 
-struct GnssData {
+struct GnssData
+{
     // Position
     double latitude;   // degrees
     double longitude;  // degrees
@@ -35,8 +36,10 @@ struct GnssData {
     uint32_t timeOfWeekMs;
     bool valid;
 
-    void print() const {
-        if (valid) {
+    void print() const
+    {
+        if (valid)
+        {
             Serial.println("--- GNSS Data ---");
 
             // Position (Access members directly)
@@ -79,36 +82,90 @@ struct GnssData {
             Serial.println(timeOfWeekMs);
 
             Serial.println("-----------------");
-        } else {
+        }
+        else
+        {
             Serial.println("GNSS Data: INVALID");
         }
     }
 };
 
-class GNSS {
-    private:
-        // Sensor
-        SFE_UBLOX_GNSS_SERIAL gnss;
-        bool gnc_DEBUG;
+class GNSS
+{
+private:
+    // Sensor
+    SFE_UBLOX_GNSS_SERIAL gnss;
+    bool gnc_DEBUG;
 
-        // Meta
-        SensorStatus status;
-        std::uint8_t consecutiveSuccesses;                          // helper to count how many status checks succeeded
-        std::uint8_t consecutiveFailures;                           // helper to count how many status checks failed
-        static constexpr std::uint8_t FAILURE_THRESHOLD = 25;        // 2.5s at 10Hz
-        static constexpr std::uint8_t RECOVERY_THRESHOLD = 3;       // .3s at 10Hz
-        static constexpr std::uint8_t DEGRADE_THRESHOLD = 3;        // .3s at 10Hz
-        static constexpr std::uint8_t FULL_RECOVERY_THRESHOLD = 5; // .5s at 10Hz
+    // Meta
+    SensorStatus status;
+    std::uint8_t consecutiveSuccesses; // consecutive fresh PVT messages with a good (>=3D) fix
+    std::uint8_t consecutiveFailures;  // consecutive fresh PVT messages WITHOUT a good fix
+    unsigned long lastPvtMillis;       // millis() timestamp of the last observed NAV-PVT iTOW update
+    uint32_t lastTimeOfWeekMs;
+    bool hasTimeOfWeek;
 
-    public:
-        // constructor declaration
-        GNSS();
+    // Cold-start fix acquisition (can legitimately take 20-30s+ depending on sky visibility)
+    // is not a health problem — NAV-PVT messages flow at the full configured rate the whole
+    // time, just with fixType<3, so without this the "bad-fix" DEGRADE_THRESHOLD below would
+    // trip ~0.3s after begin() and sit in DEGRADED for the entire acquisition window on every
+    // single boot. hasEverFixed + firstFixDeadlineMillis give the module a generous, one-time
+    // grace period to get its FIRST fix before "no good fix yet" starts counting against it.
+    // Losing a fix it already had is a different, real signal and is never grace-windowed.
+    bool hasEverFixed;
+    unsigned long firstFixDeadlineMillis;
+    static constexpr unsigned long FIRST_FIX_GRACE_MS = 45000; // generous vs. typical cold-start lock times
 
-        // Method declarations
-        bool begin();
-        SensorStatus checkHealth();
-        SensorStatus getStatus() const;
+    // SparkFun's PVT getters clear the library's internal "fresh" flags as they are read, so
+    // getPVT()'s own return value is not a stable freshness signal once other getters (e.g.
+    // inside getData()) have also touched the same message's bookkeeping. iTOW (a field in the
+    // payload itself, immune to how many times other getters were called) is the real source of
+    // truth for "a new NAV-PVT solution arrived" — see getData()'s use of lastTimeOfWeekMs above.
+    static constexpr std::uint8_t DEGRADE_THRESHOLD = 3;       // 3 consecutive bad-fix PVT messages (~0.3s at the module's real 10Hz)
+    static constexpr std::uint8_t RECOVERY_THRESHOLD = 3;      // 3 consecutive good fixes -> degraded (partial recovery)
+    static constexpr std::uint8_t FULL_RECOVERY_THRESHOLD = 5; // 5 consecutive good fixes -> nominal
+    static constexpr unsigned long SILENCE_DEGRADE_MS = 300;   // no NAV-PVT message at all for 0.3s -> degraded
+    static constexpr unsigned long SILENCE_FAILURE_MS = 2500;  // no NAV-PVT message at all for 2.5s -> failed
 
-        // getters
-        GnssData getData(GnssData d);
+    void recordFreshPvt(bool fixOk, unsigned long now);
+    void recordPvtSilence(unsigned long now);
+
+public:
+    // Snapshot of what checkHealth() is actually seeing, for debugging a status verdict
+    // that doesn't match what getData() prints (getData()'s fields are plain cached
+    // getters — they return the module's last known values whether or not anything
+    // fresh has arrived, so "the printed data looks fine" doesn't by itself mean
+    // checkHealth() is wrong; this exposes the actual freshness/counters behind it).
+    struct HealthDiagnostics
+    {
+        bool hasEverFixed;
+        unsigned long msSinceLastPvt;
+        std::uint8_t consecutiveSuccesses;
+        std::uint8_t consecutiveFailures;
+    };
+
+    // constructor declaration
+    GNSS();
+
+    // Method declarations
+    bool begin();
+
+    // Thin wrapper around getData() — the only method that actually touches the receiver and
+    // updates health state (see getData()'s doc comment). Calling checkHealth() AND getData()
+    // independently in the same tick used to each partially consume the SparkFun library's
+    // internal per-message "queried" flags, causing one to see stale/missing data the other
+    // had already read — that's what this delegation avoids: there is now exactly one
+    // hardware-touching path, matching Magnetometer::checkHealth()'s delegation through
+    // getMagSample() for the same reason.
+    SensorStatus checkHealth();
+    SensorStatus getStatus() const;
+    HealthDiagnostics getHealthDiagnostics() const;
+
+    // getters
+    //
+    // The sole hardware-touching read path for this class. Determines freshness via iTOW
+    // (timeOfWeekMs) advancing rather than getPVT()'s edge-triggered return value, and updates
+    // health state (recordFreshPvt/recordPvtSilence) as a side effect of that determination —
+    // so any code that reads GNSS data also, correctly, keeps the health state current.
+    GnssData getData(GnssData d);
 };

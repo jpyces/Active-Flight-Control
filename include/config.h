@@ -10,8 +10,8 @@ pin defs, constants, baud rates, PID gains
 // but if these values are sent as references, could lead to weird differing state issues
 
 // GPS
-inline constexpr HardwareSerial &GNSS_SERISAL = Serial7; // Serial7: TX7=29, RX7=28
-inline constexpr int BOOT_SEQ_DELAY = 5000; // in ms
+inline constexpr HardwareSerial &GNSS_SERIAL = Serial7; // Serial7: TX7=29, RX7=28
+inline constexpr unsigned long BOOT_SEQ_DELAY_MS = 5000;
 
 // pins
 // Servos - fins (through raceway to lower stage)

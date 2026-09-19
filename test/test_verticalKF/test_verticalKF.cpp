@@ -1,9 +1,3 @@
-// test/test_vertical_kf/test_vertical_kf.cpp
-//
-// Native Unity test for gnc::VerticalKF, ported (deterministically -- no RNG,
-// so results are exactly reproducible) from the cases VerticalKFTest.m
-// covers: run with `pio test -e native`.
-
 #include <unity.h>
 #include <cmath>
 

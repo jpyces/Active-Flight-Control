@@ -11,7 +11,9 @@ namespace gnc
         FAILED         // over threshold, data should not be trusted
     };
 
-    // Helper function to print the status name
+#ifdef ARDUINO
+    // Only compiled for the teensy41 build -- Serial doesn't exist under
+    // `native`, so this function is invisible there entirely.
     inline void printStatus(SensorStatus c)
     {
         switch (c)
@@ -33,5 +35,5 @@ namespace gnc
             break;
         }
     }
-
+#endif
 }

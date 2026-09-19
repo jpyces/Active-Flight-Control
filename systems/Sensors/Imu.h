@@ -79,6 +79,11 @@ namespace gnc
         float getGyroZDps();
         Vector3 getGyroDps();
         float getGyroMagnitudeDps();
+        float getGyroXRadPerSec();
+        float getGyroYRadPerSec();
+        float getGyroZRadPerSec();
+        Vector3 getGyroRadPerSec();
+        float getGyroMagnitudeRadPerSec();
 
         float getTemperatureC();
         float getTemperatureF();

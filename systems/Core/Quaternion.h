@@ -16,7 +16,6 @@ namespace gnc
         float m_W, m_X, m_Y, m_Z;
 
     public:
-
         // Euler angle triple, ZYX/aerospace convention
         struct EulerAngles
         {
@@ -44,13 +43,17 @@ namespace gnc
         Quaternion minus(const Quaternion &q2) const;
 
         // Operator overloads mirroring multiply/plus/minus
-        Quaternion operator*(const Quaternion &q2) const;
         Quaternion operator+(const Quaternion &q2) const;
         Quaternion operator-(const Quaternion &q2) const;
+        Quaternion operator*(const Quaternion &q2) const;
+        Quaternion operator*(float s) const;
+        bool operator==(const Quaternion &other) const;
+        bool operator!=(const Quaternion &other) const;
 
         float norm() const;
 
         Quaternion normalize() const;
+        bool isDegenerate() const;
 
         Quaternion conjugate() const;
 
@@ -70,5 +73,9 @@ namespace gnc
 
         static Quaternion identity();
     };
+
+    // scalar * Quaternion — free function, declared here so any file
+    // including Quaternion.h can see it (definition lives in Quaternion.cpp)
+    Quaternion operator*(float s, const Quaternion &q);
 
 }

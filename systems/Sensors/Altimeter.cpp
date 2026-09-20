@@ -1,3 +1,5 @@
+#ifdef GNC_HARDWARE_BUILD
+
 #include <SPI.h>
 #include "Altimeter.h"
 #include "config.h"
@@ -82,3 +84,5 @@ float Altimeter::getAltitude(float seaLevelhPa)
         return NAN;
     return bmp.readAltitude(seaLevelhPa);
 }
+
+#endif

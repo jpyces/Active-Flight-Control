@@ -4,6 +4,8 @@ Handles IMU interaction stuff directly with declarations to make stuff public
 
 #pragma once
 
+#ifdef GNC_HARDWARE_BUILD
+
 #include <cstdint>
 
 #include "SparkFunLSM6DSO.h"
@@ -102,3 +104,5 @@ namespace gnc
     };
 
 } // namespace gnc
+
+#endif

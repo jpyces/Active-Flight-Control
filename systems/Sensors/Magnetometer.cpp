@@ -1,6 +1,8 @@
 /*
 Handles magnetometer interaction stuff directly.
 */
+#ifdef GNC_HARDWARE_BUILD
+
 #include <cmath>
 #include "Magnetometer.h"
 #include "config.h"
@@ -133,7 +135,7 @@ float Magnetometer::getFieldZUT()
     return getFieldUT().z;
 }
 
-Magnetometer::Vector3 Magnetometer::getFieldUT()
+Vector3 Magnetometer::getFieldUT()
 {
     return getMagSample().fieldUT;
 }
@@ -252,3 +254,5 @@ bool Magnetometer::setTrigInt(bool state)
 {
     return mag.setTrigInt(state);
 }
+
+#endif

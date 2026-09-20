@@ -4,6 +4,8 @@ Handles reading directly from the GPS with declarations to make stuff public
 
 #pragma once
 
+#ifdef GNC_HARDWARE_BUILD
+
 #include <cstdint>
 
 #include <SparkFun_u-blox_GNSS_v3.h>
@@ -179,3 +181,5 @@ namespace gnc
     };
 
 }
+
+#endif

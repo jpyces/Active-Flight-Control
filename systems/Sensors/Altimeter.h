@@ -4,6 +4,8 @@ altimeter stuff
 
 #pragma once
 
+#ifdef GNC_HARDWARE_BUILD
+
 #include <cstdint>
 
 #include <Adafruit_BMP280.h>
@@ -43,3 +45,4 @@ namespace gnc
     };
 
 }
+#endif

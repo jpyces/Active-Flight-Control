@@ -1,3 +1,5 @@
+#ifdef GNC_HARDWARE_BUILD
+
 #include "Gnss.h"
 #include <cmath>
 #include "config.h"
@@ -196,3 +198,5 @@ bool GNSS::hasFix() const
 {
     return hasValidFix;
 }
+
+#endif

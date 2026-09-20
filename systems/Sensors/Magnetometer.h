@@ -4,10 +4,12 @@ Handles magnetometer interaction stuff directly with declarations to make stuff 
 
 #pragma once
 
+#ifdef GNC_HARDWARE_BUILD
+
 #include <cstdint>
 
 #include <Wire.h>
-
+#include "Vector3.h"
 #include "Adafruit_MLX90393.h"
 
 #include "SensorStatus.h"
@@ -21,13 +23,6 @@ namespace gnc
     class Magnetometer
     {
     public:
-        // Generic 3-axis container used for magnetic field vectors.
-        struct Vector3
-        {
-            float x;
-            float y;
-            float z;
-        };
 
         // Coherent converted sample for flight-control loops and telemetry packets.
         struct MagSample
@@ -146,3 +141,5 @@ namespace gnc
     };
 
 }
+
+#endif

@@ -1,3 +1,5 @@
+#ifdef GNC_HARDWARE_BUILD
+
 #include <SPI.h>
 #include <cmath>
 
@@ -270,3 +272,5 @@ bool Imu::isGyroNearLimit(float marginDps)
     float limit = imu.getGyroRange();
     return getGyroMagnitudeDps() >= (limit - marginDps);
 }
+
+#endif

@@ -10,6 +10,8 @@ namespace gnc
     {
     public:
         PIDControllerBase(float kp, float ki, float kd, float outMin, float outMax);
+        PIDControllerBase(const PIDControllerBase &) = delete;
+        PIDControllerBase &operator=(const PIDControllerBase &) = delete;
 
         // Runs one PID step and returns the saturated output.
         //

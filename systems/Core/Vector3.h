@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include "eigen.h"
 
 namespace gnc
 {
@@ -10,7 +11,7 @@ namespace gnc
         float y;
         float z;
     };
-
+    inline Eigen::Vector3f toEigen(const Vector3 &v) { return {v.x, v.y, v.z}; }
     inline float norm(Vector3 v)
     {
         return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);

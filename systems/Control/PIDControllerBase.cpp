@@ -2,6 +2,7 @@
 
 namespace gnc
 {
+
     PIDControllerBase::PIDControllerBase(float kp, float ki, float kd, float outMin, float outMax)
         : m_Kp(kp), m_Ki(ki), m_Kd(kd), m_OutMin(outMin), m_OutMax(outMax),
           m_Integral(0.0f), m_PrevMeasurement(0.0f), m_Initialized(false)

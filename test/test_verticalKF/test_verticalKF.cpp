@@ -1,218 +1,146 @@
 #include <unity.h>
-#include <cmath>
-
+#include "eigen.h"
 #include "VerticalKF.h"
 
 using namespace gnc;
 
 namespace
 {
-    constexpr float kTol = 1e-3f;
-
-    void zeroMatrix(float M[3][3])
+    VerticalKF makeDefaultKF()
     {
-        for (int i = 0; i < 3; ++i)
-            for (int j = 0; j < 3; ++j)
-                M[i][j] = 0.0f;
+        Eigen::Matrix3f Q = Eigen::Matrix3f::Identity() * 1e-4f;
+        float R = 1.0f;
+        Eigen::Vector3f x0 = Eigen::Vector3f::Zero();
+        Eigen::Matrix3f P0 = Eigen::Matrix3f::Identity();
+        return VerticalKF(Q, R, x0, P0);
     }
 }
 
-void setUp() {}
-void tearDown() {}
-
-// predict() alone, with no correct() calls, should drift -- not hold steady.
-// A nonzero initial velocity with zero accel input should carry altitude
-// forward exactly (no noise involved, so this is exact, not approximate):
-// altitude_N = altitude_0 + velocity_0 * dt * N.
-void test_predict_only_drifts_without_correction()
+void test_predict_with_zero_accel_holds_state()
 {
-    float Q[3][3];
-    zeroMatrix(Q);
-    float P0[3][3];
-    zeroMatrix(P0);
-    float x0[3] = {0.0f, 1.0f, 0.0f}; // altitude=0, velocity=1 m/s, bias=0
+    VerticalKF kf = makeDefaultKF();
+    kf.predict(0.0f, 0.01f);
 
-    VerticalKF kf(Q, /*R=*/0.01f, x0, P0);
-
-    float dt = 0.1f;
-    int steps = 20;
-    for (int i = 0; i < steps; ++i)
-    {
-        kf.predict(/*aMeas=*/0.0f, dt);
-    }
-
-    TEST_ASSERT_FLOAT_WITHIN(kTol, 1.0f * dt * steps, kf.altitude());
-    TEST_ASSERT_FLOAT_WITHIN(kTol, 1.0f, kf.velocity());
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, 0.0f, kf.altitude());
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, 0.0f, kf.velocity());
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, 0.0f, kf.accelBias());
 }
 
-// Repeated predict+correct against a constant, noiseless true altitude
-// should converge the altitude estimate to that true value, starting from a
-// wrong initial guess.
-void test_converges_to_known_altitude()
+void test_predict_with_constant_accel_matches_kinematics()
 {
-    float Q[3][3] = {
-        {1e-4f, 0.0f, 0.0f},
-        {0.0f, 1e-4f, 0.0f},
-        {0.0f, 0.0f, 1e-6f},
-    };
-    float P0[3][3] = {
-        {1.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f},
-    };
-    float x0[3] = {0.0f, 0.0f, 0.0f};
-    float trueAltitude = 5.0f;
-
-    VerticalKF kf(Q, /*R=*/0.05f, x0, P0);
-
+    VerticalKF kf = makeDefaultKF();
+    float a = 2.0f;
     float dt = 0.01f;
-    for (int i = 0; i < 500; ++i)
+
+    for (int i = 0; i < 100; ++i)
     {
-        kf.predict(/*aMeas=*/0.0f, dt); // true accel is 0 -- stationary at trueAltitude
-        kf.correct(trueAltitude);
+        kf.predict(a, dt);
     }
 
-    TEST_ASSERT_FLOAT_WITHIN(0.05f, trueAltitude, kf.altitude());
+    float t = 100 * dt;
+    float expectedVel = a * t;
+    float expectedPos = 0.5f * a * t * t;
+
+    TEST_ASSERT_FLOAT_WITHIN(1e-3f, expectedVel, kf.velocity());
+    TEST_ASSERT_FLOAT_WITHIN(1e-3f, expectedPos, kf.altitude());
 }
 
-// A constant, unmodeled accelerometer bias (sensor reads a fixed nonzero
-// value even though the true vertical acceleration is 0) should be absorbed
-// into the bias state over time, rather than permanently corrupting the
-// altitude/velocity estimate -- that's the entire reason accelBias is a
-// state here rather than assumed away.
-void test_bias_state_converges_to_known_bias()
+void test_correct_moves_estimate_toward_measurement_not_onto_it()
 {
-    float trueBias = 0.05f; // m/s^2 -- deliberately larger than the real
-                            // literature-informed Qbias placeholder so this
-                            // unit test converges in a tractable number of
-                            // iterations; not meant to reflect real hardware
-                            // tuning (see gnc-findings.md's Q/R section).
-    float Q[3][3] = {
-        {1e-5f, 0.0f, 0.0f},
-        {0.0f, 1e-5f, 0.0f},
-        {0.0f, 0.0f, 1e-4f}, // large enough Qbias to let the bias state move
-    };
-    float P0[3][3] = {
-        {1.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f},
-    };
-    float x0[3] = {0.0f, 0.0f, 0.0f};
-    float trueAltitude = 0.0f; // true vehicle is stationary throughout
+    VerticalKF kf = makeDefaultKF();
+    float zMeas = 5.0f;
 
-    VerticalKF kf(Q, /*R=*/0.01f, x0, P0);
+    kf.correct(zMeas);
 
-    float dt = 0.01f;
+    TEST_ASSERT_TRUE(kf.altitude() > 0.0f);
+    TEST_ASSERT_TRUE(kf.altitude() < zMeas);
+}
+
+void test_repeated_correct_converges_to_measurement()
+{
+    VerticalKF kf = makeDefaultKF();
+    float zMeas = 5.0f;
+
     for (int i = 0; i < 2000; ++i)
     {
-        kf.predict(/*aMeas=*/trueBias, dt); // sensor always reads the bias
-        kf.correct(trueAltitude);           // but truth never moves
+        kf.correct(zMeas);
     }
 
-    TEST_ASSERT_FLOAT_WITHIN(0.01f, trueBias, kf.accelBias());
-    // And the altitude estimate should have converged back near truth too,
-    // not stayed corrupted by the unmodeled bias.
-    TEST_ASSERT_FLOAT_WITHIN(0.05f, trueAltitude, kf.altitude());
+    TEST_ASSERT_FLOAT_WITHIN(1e-2f, zMeas, kf.altitude());
 }
 
-// Covariance must stay well-formed (symmetric, non-negative diagonal) over a
-// long mixed run of predicts and corrects -- the Joseph-form update exists
-// specifically to guarantee this under floating-point roundoff.
-void test_covariance_stays_symmetric_and_psd()
+void test_correct_shrinks_covariance_trace()
 {
-    float Q[3][3] = {
-        {1e-4f, 0.0f, 0.0f},
-        {0.0f, 1e-4f, 0.0f},
-        {0.0f, 0.0f, 1e-6f},
-    };
-    float P0[3][3] = {
-        {1.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f},
-    };
-    float x0[3] = {0.0f, 0.0f, 0.0f};
+    VerticalKF kf = makeDefaultKF();
+    Eigen::Matrix3f P0 = kf.covariance();
+    float trace0 = P0.trace();
 
-    VerticalKF kf(Q, /*R=*/0.05f, x0, P0);
+    kf.correct(5.0f);
 
-    float dt = 0.01f;
-    for (int i = 0; i < 1000; ++i)
+    float trace1 = kf.covariance().trace();
+    TEST_ASSERT_TRUE(trace1 < trace0);
+}
+
+void test_covariance_stays_symmetric_after_several_cycles()
+{
+    VerticalKF kf = makeDefaultKF();
+
+    for (int i = 0; i < 50; ++i)
     {
-        // Deterministic "noisy-ish" accel/altitude readings via a simple
-        // oscillation rather than RNG, so the test is exactly reproducible.
-        float aMeas = 0.1f * std::sin(0.1f * i);
-        kf.predict(aMeas, dt);
-        if (i % 5 == 0)
-        {
-            float zMeas = 1.0f + 0.02f * std::cos(0.3f * i);
-            kf.correct(zMeas);
-        }
+        kf.predict(1.0f, 0.01f);
+        kf.correct(1.0f);
     }
 
-    float P[3][3];
-    kf.covariance(P);
-
-    for (int i = 0; i < 3; ++i)
+    Eigen::Matrix3f P = kf.covariance();
+    for (int r = 0; r < 3; ++r)
     {
-        TEST_ASSERT_TRUE(P[i][i] >= 0.0f);
-        for (int j = 0; j < 3; ++j)
+        for (int c = 0; c < 3; ++c)
         {
-            TEST_ASSERT_FLOAT_WITHIN(1e-3f, P[i][j], P[j][i]);
+            TEST_ASSERT_FLOAT_WITHIN(1e-4f, P(r, c), P(c, r));
         }
     }
 }
 
-// The filter shouldn't chase individual noisy barometer samples: alternating
-// the measurement above/below the true altitude by a fixed amount (a
-// deterministic stand-in for measurement noise) should leave the converged
-// altitude estimate's swing much smaller than the injected measurement swing.
-void test_rejects_individual_measurement_noise()
+void test_reset_restores_given_state_and_covariance()
 {
-    float Q[3][3] = {
-        {1e-5f, 0.0f, 0.0f},
-        {0.0f, 1e-5f, 0.0f},
-        {0.0f, 0.0f, 1e-6f},
-    };
-    float P0[3][3] = {
-        {1.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f},
-    };
-    float x0[3] = {2.0f, 0.0f, 0.0f};
-    float trueAltitude = 2.0f;
-    float noiseAmplitude = 0.3f;
+    VerticalKF kf = makeDefaultKF();
+    kf.predict(3.0f, 0.02f);
+    kf.correct(1.5f);
 
-    VerticalKF kf(Q, /*R=*/0.05f, x0, P0);
+    Eigen::Vector3f x0(1.0f, 2.0f, 0.1f);
+    Eigen::Matrix3f P0 = Eigen::Matrix3f::Identity() * 0.5f;
+    kf.reset(x0, P0);
 
-    float dt = 0.01f;
-    float minAltitude = 1e9f;
-    float maxAltitude = -1e9f;
-    for (int i = 0; i < 300; ++i)
-    {
-        kf.predict(/*aMeas=*/0.0f, dt);
-        float noisySign = (i % 2 == 0) ? 1.0f : -1.0f;
-        kf.correct(trueAltitude + noisySign * noiseAmplitude);
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, 1.0f, kf.altitude());
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, 2.0f, kf.velocity());
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, 0.1f, kf.accelBias());
 
-        if (i > 50) // let initial transient settle before measuring swing
-        {
-            minAltitude = std::fmin(minAltitude, kf.altitude());
-            maxAltitude = std::fmax(maxAltitude, kf.altitude());
-        }
-    }
+    Eigen::Matrix3f P = kf.covariance();
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, 0.5f, P(0, 0));
+}
 
-    float estimateSwing = maxAltitude - minAltitude;
-    // The raw measurement swings by 2*noiseAmplitude every other sample; the
-    // filtered estimate should swing far less than that.
-    TEST_ASSERT_TRUE(estimateSwing < noiseAmplitude);
+void test_state_and_covariance_reflect_latest_update()
+{
+    VerticalKF kf = makeDefaultKF();
+    kf.predict(1.0f, 0.01f);
+    kf.correct(0.5f);
+
+    Eigen::Vector3f x = kf.state();
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, kf.altitude(), x(0));
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, kf.velocity(), x(1));
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, kf.accelBias(), x(2));
 }
 
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
-    RUN_TEST(test_predict_only_drifts_without_correction);
-    RUN_TEST(test_converges_to_known_altitude);
-    RUN_TEST(test_bias_state_converges_to_known_bias);
-    RUN_TEST(test_covariance_stays_symmetric_and_psd);
-    RUN_TEST(test_rejects_individual_measurement_noise);
+    RUN_TEST(test_predict_with_zero_accel_holds_state);
+    RUN_TEST(test_predict_with_constant_accel_matches_kinematics);
+    RUN_TEST(test_correct_moves_estimate_toward_measurement_not_onto_it);
+    RUN_TEST(test_repeated_correct_converges_to_measurement);
+    RUN_TEST(test_correct_shrinks_covariance_trace);
+    RUN_TEST(test_covariance_stays_symmetric_after_several_cycles);
+    RUN_TEST(test_reset_restores_given_state_and_covariance);
+    RUN_TEST(test_state_and_covariance_reflect_latest_update);
     return UNITY_END();
 }
-

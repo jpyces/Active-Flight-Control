@@ -30,7 +30,10 @@ namespace gnc::sim
 
 // ---------------------------------------------------------------------------
 // Fixture -- constants match IntegratedControllerFullTest.m / AltitudeHoldTest.m.
-// UNITS: degrees and deg/s throughout, exactly as the MATLAB tests use them.
+// UNITS: radians and rad/s throughout, matching the real system (Imu ->
+// Madgwick -> StateEstimate are all radians). Gains are unchanged from MATLAB:
+// closed-loop behavior depends on gain/inertia, which is unit-invariant --
+// only the bounds and the disturbance/tolerance values needed converting.
 // ---------------------------------------------------------------------------
 namespace
 {
@@ -41,9 +44,10 @@ namespace
     constexpr float kG = 10.0f;
     constexpr float kHoverThrust = kMass * kG; // 10 N
     constexpr float kMaxThrust = 15.0f;
-    constexpr float kMaxRate = 150.0f; // angleBounds = [-150, 150] (deg/s)
+    constexpr float kDeg = 3.14159265358979323846f / 180.0f;
+    constexpr float kMaxRate = 150.0f * kDeg; // 150 deg/s = 2.618 rad/s
 
-    constexpr float kAngleTol = 1.0f;     // deg
+    constexpr float kAngleTol = 1.0f * kDeg; // 1 deg, in rad
     constexpr float kAngleSettleT = 2.0f; // s
     constexpr float kAltTol = 0.1f;       // m
     constexpr float kAltSettleT = 4.0f;   // s
@@ -125,7 +129,7 @@ namespace
     void runSingleAxisTest(int axis)
     {
         Eigen::Vector3f angle0 = Eigen::Vector3f::Zero();
-        angle0[axis] = 30.0f; // deg, matches RollAngleCascadeTest's disturbance
+        angle0[axis] = 30.0f * kDeg; // 30 deg, matches RollAngleCascadeTest's disturbance
 
         SimResult r = runClosedLoop(angle0, 0.0f, 0.0f);
 
@@ -175,7 +179,7 @@ void test_yaw_only_settles_without_cross_axis_leak() { runSingleAxisTest(2); }
 // cross-wired axis can't pass by symmetry. 0 -> 5 m climb at the same time.
 void test_full_all_axes_and_altitude_settle()
 {
-    SimResult r = runClosedLoop(Eigen::Vector3f(20.0f, -15.0f, 10.0f), 0.0f, 5.0f);
+    SimResult r = runClosedLoop(Eigen::Vector3f(20.0f, -15.0f, 10.0f) * kDeg, 0.0f, 5.0f);
 
     for (int i = 0; i < 3; ++i)
         TEST_ASSERT_TRUE(r.maxAbsAngleAfterSettle[i] < kAngleTol);
@@ -209,7 +213,7 @@ void test_roll_torque_mixes_with_expected_signs()
     AttitudeAltitudeController ctrl = makeController();
     Setpoints sp;
     ControllerMeasurements meas;
-    meas.angle[0] = 10.0f; // positive roll -> negative corrective torque
+    meas.angle[0] = 10.0f * kDeg; // positive roll -> negative corrective torque
 
     ControllerOutput out = ctrl.update(sp, meas);
     TEST_ASSERT_TRUE(out.torque[0] < 0.0f);
@@ -228,8 +232,8 @@ void test_reset_matches_fresh_controller()
     Setpoints sp;
 
     ControllerMeasurements dirty;
-    dirty.angle << 20.0f, -10.0f, 5.0f;
-    dirty.rate << 30.0f, -20.0f, 10.0f;
+    dirty.angle << 20.0f * kDeg, -10.0f * kDeg, 5.0f * kDeg;
+    dirty.rate << 30.0f * kDeg, -20.0f * kDeg, 10.0f * kDeg;
     dirty.altitude = 0.5f;
     for (int k = 0; k < 500; ++k)
         used.update(sp, dirty);
@@ -237,8 +241,8 @@ void test_reset_matches_fresh_controller()
     used.reset();
 
     ControllerMeasurements probe;
-    probe.angle << 5.0f, 2.0f, -3.0f;
-    probe.rate << 5.0f, -2.0f, 1.0f;
+    probe.angle << 5.0f * kDeg, 2.0f * kDeg, -3.0f * kDeg;
+    probe.rate << 5.0f * kDeg, -2.0f * kDeg, 1.0f * kDeg;
     probe.altitude = -0.2f;
 
     ControllerOutput a = used.update(sp, probe);

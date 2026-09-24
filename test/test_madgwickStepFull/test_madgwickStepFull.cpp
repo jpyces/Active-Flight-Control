@@ -312,6 +312,70 @@ void test_result_stays_unit_norm()
     TEST_ASSERT_FLOAT_WITHIN(kTol, 1.0f, quatNorm(actual));
 }
 
+// --- MadgwickDiagnostics ---
+
+// Passing a diagnostics pointer must not change the result.
+void test_diagnostics_do_not_change_result()
+{
+    Quaternion q(0.9825f, 0.1f, 0.1f, 0.1f);
+    Vector3 gyro = {0.2f, -0.1f, 0.05f};
+    Vector3 accel = {0.1f, -0.2f, 0.95f};
+    Vector3 magUT = {22.0f, 3.0f, 41.0f};
+
+    MadgwickDiagnostics diag;
+    Quaternion withDiag = madgwickStepFull(q.normalize(), gyro, accel, magUT, 0.01f, 0.1f, &diag);
+    Quaternion without = madgwickStepFull(q.normalize(), gyro, accel, magUT, 0.01f, 0.1f);
+
+    TEST_ASSERT_TRUE(withDiag == without);
+}
+
+// A normal small step: raw norm is ~1, and the flags report which sensors were fused.
+void test_diagnostics_report_normal_step()
+{
+    MadgwickDiagnostics diag;
+    madgwickStepFull(Quaternion::identity(), Vector3{0.1f, 0.0f, 0.0f}, Vector3{0.0f, 0.0f, 1.0f},
+                     Vector3{20.0f, 0.0f, 40.0f}, 0.01f, 0.1f, &diag);
+
+    TEST_ASSERT_FLOAT_WITHIN(1e-3f, 1.0f, diag.preNormalizeNorm);
+    TEST_ASSERT_TRUE(diag.accelUsed);
+    TEST_ASSERT_TRUE(diag.magUsed);
+}
+
+void test_diagnostics_report_skipped_sensors()
+{
+    MadgwickDiagnostics diag;
+    madgwickStepFull(Quaternion::identity(), Vector3{0.0f, 0.0f, 0.0f}, Vector3{0.0f, 0.0f, 0.0f},
+                     Vector3{0.0f, 0.0f, 0.0f}, 0.01f, 0.1f, &diag);
+
+    TEST_ASSERT_FALSE(diag.accelUsed);
+    TEST_ASSERT_FALSE(diag.magUsed);
+}
+
+// The case the final normalize() hides: a NaN gyro makes the raw step NaN. The
+// diagnostics must show it.
+void test_diagnostics_expose_non_finite_step()
+{
+    MadgwickDiagnostics diag;
+    const float nan = std::numeric_limits<float>::quiet_NaN();
+    madgwickStepFull(Quaternion::identity(), Vector3{nan, 0.0f, 0.0f}, Vector3{0.0f, 0.0f, 1.0f},
+                     Vector3{20.0f, 0.0f, 40.0f}, 0.01f, 0.1f, &diag);
+
+    TEST_ASSERT_FALSE(std::isfinite(diag.preNormalizeNorm));
+}
+
+// A quaternion that is already degenerate going in collapses the raw step, and
+// normalize() turns it into a healthy-looking identity. Only preNormalizeNorm
+// tells you.
+void test_diagnostics_expose_collapsed_step()
+{
+    MadgwickDiagnostics diag;
+    Quaternion out = madgwickStepFull(Quaternion(0.0f, 0.0f, 0.0f, 0.0f), Vector3{0.0f, 0.0f, 0.0f},
+                                      Vector3{0.0f, 0.0f, 0.0f}, Vector3{0.0f, 0.0f, 0.0f}, 0.01f, 0.1f, &diag);
+
+    TEST_ASSERT_TRUE(out == Quaternion::identity()); // looks fine...
+    TEST_ASSERT_TRUE(diag.preNormalizeNorm < 1e-6f); // ...but wasn't
+}
+
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
@@ -323,5 +387,10 @@ int main(int argc, char **argv)
     RUN_TEST(test_degrades_to_pure_gyro_integration_when_accel_and_mag_invalid);
     RUN_TEST(test_beta_zero_ignores_valid_accel_and_mag);
     RUN_TEST(test_result_stays_unit_norm);
+    RUN_TEST(test_diagnostics_do_not_change_result);
+    RUN_TEST(test_diagnostics_report_normal_step);
+    RUN_TEST(test_diagnostics_report_skipped_sensors);
+    RUN_TEST(test_diagnostics_expose_non_finite_step);
+    RUN_TEST(test_diagnostics_expose_collapsed_step);
     return UNITY_END();
 }

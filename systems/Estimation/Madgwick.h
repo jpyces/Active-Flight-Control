@@ -13,5 +13,19 @@ namespace gnc
     // accel-only "NoMag" variant would -- just pass whatever mag reading you
     // have (including a zeroed/invalid one on a mag-fault path); no second
     // entry point is needed.
-    Quaternion madgwickStepFull(const Quaternion &q, const Vector3 &gyro, Vector3 accel, Vector3 magUT, float dt, float beta);
+    // What happened inside one step -- things the normalized result can't tell you.
+    struct MadgwickDiagnostics
+    {
+        // |q + qdot*dt| BEFORE the final normalize(). The returned quaternion is
+        // always unit-norm (or identity, if this collapsed below epsilon), so this
+        // is the only place a collapsed or non-finite step is still visible.
+        float preNormalizeNorm{1.0f};
+        bool accelUsed{false}; // accel passed the near-zero-norm guard this step
+        bool magUsed{false};   // mag passed the near-zero-norm guard this step
+    };
+
+    // `diag` is optional: pass a pointer to get the step diagnostics, or omit it
+    // (existing call sites are unaffected).
+    Quaternion madgwickStepFull(
+        const Quaternion &q, const Vector3 &gyro, Vector3 accel, Vector3 magUT, float dt, float beta, MadgwickDiagnostics *diag = nullptr);
 }

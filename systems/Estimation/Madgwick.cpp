@@ -5,7 +5,7 @@
 
 using namespace gnc;
 
-// anonymous namespace for this to be local only to 
+// anonymous namespace for this to be local only to
 namespace
 {
     constexpr float kEps = std::numeric_limits<float>::epsilon();
@@ -59,7 +59,8 @@ namespace
     }
 }
 
-Quaternion gnc::madgwickStepFull(const Quaternion &q, const Vector3 &gyro, Vector3 accel, Vector3 magUT, float dt, float beta)
+Quaternion gnc::madgwickStepFull(
+    const Quaternion &q, const Vector3 &gyro, Vector3 accel, Vector3 magUT, float dt, float beta, MadgwickDiagnostics *diag)
 {
     Quaternion qdotGyro = 0.5f * q * Quaternion(0.0f, gyro.x, gyro.y, gyro.z);
 
@@ -79,17 +80,28 @@ Quaternion gnc::madgwickStepFull(const Quaternion &q, const Vector3 &gyro, Vecto
         accumulateMagGradient(q, magUT, gradient);
     }
 
-    float gradientNorm = std::sqrt(gradient[0] * gradient[0] + gradient[1] * gradient[1] +
-                                   gradient[2] * gradient[2] + gradient[3] * gradient[3]);
+    float gradientNorm = std::sqrt(
+        gradient[0] * gradient[0] + gradient[1] * gradient[1] +
+        gradient[2] * gradient[2] + gradient[3] * gradient[3]);
 
     Quaternion gradientHat(0.0f, 0.0f, 0.0f, 0.0f);
     if (gradientNorm > kEps)
     {
-        gradientHat = Quaternion(gradient[0] / gradientNorm, gradient[1] / gradientNorm,
-                                 gradient[2] / gradientNorm, gradient[3] / gradientNorm);
+        gradientHat = Quaternion(
+            gradient[0] / gradientNorm, gradient[1] / gradientNorm,
+            gradient[2] / gradientNorm, gradient[3] / gradientNorm);
     }
 
     Quaternion qdotCorrected = qdotGyro - beta * gradientHat;
     Quaternion qRot = qdotCorrected * dt;
-    return (q + qRot).normalize();
+    Quaternion qRaw = q + qRot;
+
+    if (diag != nullptr)
+    {
+        diag->preNormalizeNorm = qRaw.norm();
+        diag->accelUsed = accelValid;
+        diag->magUsed = magValid;
+    }
+
+    return qRaw.normalize();
 }

@@ -36,7 +36,7 @@ namespace gnc
 
     // Owns the AHRS source switching (complementary seed -> Madgwick nominal ->
     // complementary fallback) and the vertical KF; produces the StateEstimate the
-    // controller consumes. C++ port of StateEstimator.m.
+    // controller consumes. 
     //
     // Sensor gating, applied every update() (a reading with any NaN/Inf component
     // is always unusable, whatever its status says):

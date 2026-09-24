@@ -3,7 +3,7 @@
 Determines the permitted behavior of the vehicle at each control-loop tick: boot, arming, takeoff, landing, and fault response. The state machine does not command the vehicle; the controller does. The state machine reports the current mission phase and the actions `main.cpp` must take.
 
 | File | Contents |
-|---|---|
+| --- | --- |
 | `Core/FlightState.h` | Mission states (`On` … `Flight`) |
 | `FSM/FlightStateMachine.h` | `CheckResult`, `Failsafe`, configuration/input/output structs, class declaration |
 | `FSM/FlightStateMachine.cpp` | Implementation |
@@ -17,7 +17,7 @@ Determines the permitted behavior of the vehicle at each control-loop tick: boot
 
 The state machine owns no other objects and does not call the estimator, controller, or ESC driver. Each tick:
 
-```
+```cpp
 main.cpp populates FsmInputs  ──▶  fsm.step(in)  ──▶  FsmOutputs  ──▶  main.cpp executes requests
 ```
 
@@ -26,7 +26,7 @@ All information required by the state machine arrives as plain data. All actions
 ### Orthogonal mission state and failsafe
 
 | Variable | Type | Represents |
-|---|---|---|
+| --- | --- | --- |
 | `state` | `FlightState` | Position in the mission sequence |
 | `failsafe` | `Failsafe` | Active fault, if any |
 
@@ -64,7 +64,7 @@ stateDiagram-v2
 `↑` denotes a rising edge. Mission transitions execute only while `failsafe == None`.
 
 | State | Exit condition | Next state | Requests |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `On` | none (first tick) | `MemoryCheck` | |
 | `MemoryCheck` | `memoryCheck == Passed` | `SensorInit` | |
 | `SensorInit` | `sensorInit == Passed` | `CalibrationCheck` | |
@@ -93,7 +93,7 @@ Behavioral notes:
 ### Definitions
 
 | Failsafe | Priority | Trip condition | Applicable states | Response |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `SensorLoss` | 1 (highest) | accel or gyro `FAILED` | Disarmed, MotorCheck, Armed, Flight | Motors disabled |
 | `AhrsDegraded` | 2 | Estimator in complementary-filter fallback | Disarmed, MotorCheck, Armed, Flight | Descent on complementary filter |
 | `Altitude` | 3 | Altitude error > `altitudeErrorTol` for longer than `altitudeErrorTimeout` | Flight | Descent |
@@ -137,7 +137,7 @@ All failsafe paths terminate in `Disarmed` on the ground.
 ## Motor enable
 
 | Condition | `motorsEnabled` |
-|---|---|
+| --- | --- |
 | `state` is `MotorCheck`, `Armed`, or `Flight` | true |
 | Any other state, including states added later | false |
 | `failsafe == SensorLoss` (overrides all of the above) | false |
@@ -145,7 +145,7 @@ All failsafe paths terminate in `Disarmed` on the ground.
 Descent is commanded by the controller, selected from `out.failsafe`:
 
 | `out.failsafe` in `Flight` | Controller mode |
-|---|---|
+| --- | --- |
 | `None` | Nominal |
 | `AhrsDegraded`, `Altitude`, `RcLoss` | Sub-hover descent with attitude control active |
 | `SensorLoss` | Not applicable; motors disabled |
@@ -155,7 +155,7 @@ Descent is commanded by the controller, selected from `out.failsafe`:
 ## Rising-edge rationale
 
 | Level-triggered behavior | Edge-triggered behavior |
-|---|---|
+| --- | --- |
 | Arm signal high at power-up arms at end of boot | Remains `Disarmed` until the signal is cycled |
 | After a failsafe disarm, arm signal still high re-arms immediately | Remains `Disarmed` until the signal is cycled |
 | After landing, takeoff signal still high relaunches immediately | Remains `Armed` until the signal is cycled |
@@ -172,7 +172,7 @@ Previous-tick signal values are updated on every tick, including while a failsaf
 ### `FlightStateMachineConfig`
 
 | Field | Unit | Description |
-|---|---|---|
+| --- | --- | --- |
 | `altitudeErrorTol` | m | Altitude error threshold that starts the dwell timer |
 | `altitudeErrorTimeout` | s | Dwell duration required to trip `Altitude` |
 | `rcLossTimeout` | s | Duration without valid RC required to trip `RcLoss` |
@@ -183,7 +183,7 @@ Previous-tick signal values are updated on every tick, including while a failsaf
 Default values represent a healthy, idle system.
 
 | Field | Type | Source |
-|---|---|---|
+| --- | --- | --- |
 | `dt` | float, s | Loop timer |
 | `memoryCheck`, `sensorInit`, `calibrationCheck`, `motorCheck` | `CheckResult` | Respective check modules |
 | `armed` | bool, level + edge | Operator arm signal |
@@ -200,7 +200,7 @@ Default values represent a healthy, idle system.
 `resetEstimator`, `resetController`, and `startMotorCheck` are single-tick requests and default to `false`.
 
 | Field | Required action in `main.cpp` |
-|---|---|
+| --- | --- |
 | `state`, `failsafe` | Log; select controller mode from `failsafe` |
 | `motorsEnabled` | Command zero output when false |
 | `resetEstimator` | Call `StateEstimator::reset()` |
@@ -212,7 +212,7 @@ Default values represent a healthy, idle system.
 ## External responsibilities
 
 | Module | Responsibility |
-|---|---|
+| --- | --- |
 | Boot check modules | Own their timeouts; report `Failed` on timeout or error |
 | ESC test routine | Reset result to `Pending` on `startMotorCheck`; drive motors during `MotorCheck` |
 | Touchdown detector | Report `landed` high when altitude is within ~0.15 m of the ground reference captured at arming, \|vz\| < ~0.2 m/s, and throttle is below hover, sustained for ~0.5 s (thresholds to be tuned) |
@@ -257,7 +257,7 @@ if (!out.motorsEnabled) { writeMotorsZero(); }
 ### Nominal flight
 
 | Tick | Event | `state` | `failsafe` | Outputs |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 1–5 | Boot checks pass | On → … → Disarmed | None | Motors disabled |
 | 6 | `armed` rising edge | MotorCheck | None | `resetController`, `startMotorCheck` |
 | 7 | ESC test passes | Armed | None | Motors enabled |
@@ -268,7 +268,7 @@ if (!out.motorsEnabled) { writeMotorsZero(); }
 ### Attitude estimator fault in flight
 
 | Tick | Event | `state` | `failsafe` | Outputs |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 1 | Estimator enters fallback | Flight | AhrsDegraded | Descent; no estimator reset |
 | 2 | Gyro `FAILED` | Flight | SensorLoss | Motors disabled |
 | 3 | Gyro status recovers | Flight | AhrsDegraded | Descent resumes |
@@ -283,7 +283,7 @@ Tick 3 illustrates de-escalation only. In operation, motors are disabled at tick
 ## Deferred items
 
 | Item | Status |
-|---|---|
+| --- | --- |
 | `BootFailed` latched state | Boot check failures are non-latching; a shared latched state is planned once a check requires hard failure |
 | Motor-loss failsafe | Requires ESC RPM telemetry (bidirectional DShot) |
 | RC hardware, manual control, airborne kill switch | Not present; `rcRequired = false` |

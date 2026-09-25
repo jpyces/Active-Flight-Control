@@ -1,6 +1,8 @@
 #include "AttitudeAltitudeController.h"
 #include "MotorMixer.h"
 
+#include <algorithm>
+
 namespace gnc
 {
     AttitudeAltitudeController::AttitudeAltitudeController(
@@ -30,7 +32,8 @@ namespace gnc
     {
     }
 
-    ControllerOutput AttitudeAltitudeController::update(const Setpoints &sp, const ControllerMeasurements &meas)
+    ControllerOutput AttitudeAltitudeController::update(
+        const Setpoints &sp, const ControllerMeasurements &meas, std::optional<float> throttleOverride)
     {
         Eigen::Vector3f torque = Eigen::Vector3f::Zero();
 
@@ -44,9 +47,30 @@ namespace gnc
             torque[i] = ratePid.update(desiredRate, meas.rate[i], m_dt);
         }
 
-        // Altitude: PID trim on top of hover feedforward
-        float trim = m_altitudePID.update(sp.altitude, meas.altitude, m_dt);
-        float throttle = m_hoverThrust + trim; // Newtons -- returned as-is for tests/logging
+        // Altitude: either an external thrust override, or PID trim on top of
+        // hover feedforward. Both paths produce Newtons and share the
+        // normalization + mixing below -- one units path, not two.
+        float throttle; // Newtons -- returned as-is for tests/logging
+        if (throttleOverride.has_value())
+        {
+            // PID skipped entirely: it must not act on (or accumulate from) an
+            // altitude estimate that may be the reason for the override.
+            throttle = std::clamp(*throttleOverride, 0.0f, m_maxThrust);
+            m_throttleOverridden = true;
+        }
+        else
+        {
+            if (m_throttleOverridden)
+            {
+                // Handover back to closed loop: stale prevMeasurement would cause
+                // a derivative kick, stale integral a step. reset() clears both and
+                // suppresses D on this first call.
+                m_altitudePID.reset();
+                m_throttleOverridden = false;
+            }
+            float trim = m_altitudePID.update(sp.altitude, meas.altitude, m_dt);
+            throttle = m_hoverThrust + trim;
+        }
 
         // Normalize both channels into mixMotors' unitless convention
         float normThrottle = throttle / m_maxThrust;                          // [0,1]
@@ -67,5 +91,6 @@ namespace gnc
         for (auto &pid : m_rateLoopPIDs)
             pid.reset();
         m_altitudePID.reset();
+        m_throttleOverridden = false;
     }
 }

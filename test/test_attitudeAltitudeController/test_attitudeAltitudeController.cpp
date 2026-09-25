@@ -255,6 +255,93 @@ void test_reset_matches_fresh_controller()
         TEST_ASSERT_FLOAT_WITHIN(1e-6f, b.motorCmds[m], a.motorCmds[m]);
 }
 
+// ---------------------------------------------------------------------------
+// Throttle override
+// ---------------------------------------------------------------------------
+
+// Override replaces the altitude channel only: throttle equals the override,
+// torque is identical to a normal update with the same inputs.
+void test_throttle_override_replaces_altitude_only()
+{
+    AttitudeAltitudeController normal = makeController();
+    AttitudeAltitudeController overridden = makeController();
+    Setpoints sp;
+    sp.altitude = 2.0f;
+
+    ControllerMeasurements meas;
+    meas.angle << 10.0f * kDeg, -5.0f * kDeg, 3.0f * kDeg;
+    meas.rate << 4.0f * kDeg, 2.0f * kDeg, -1.0f * kDeg;
+    meas.altitude = 0.0f;
+
+    ControllerOutput a = normal.update(sp, meas);
+    ControllerOutput b = overridden.update(sp, meas, 9.0f);
+
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, 9.0f, b.throttle);
+    for (int i = 0; i < 3; ++i)
+        TEST_ASSERT_FLOAT_WITHIN(1e-6f, a.torque[i], b.torque[i]);
+}
+
+// Override goes through the same normalization and mixing: zero attitude error
+// with an override of hover thrust gives four equal motors at hover/maxThrust.
+void test_throttle_override_is_mixed_like_normal_throttle()
+{
+    AttitudeAltitudeController ctrl = makeController();
+    Setpoints sp;
+    ControllerMeasurements meas;
+
+    ControllerOutput out = ctrl.update(sp, meas, kHoverThrust);
+    for (int m = 0; m < 4; ++m)
+        TEST_ASSERT_FLOAT_WITHIN(1e-6f, kHoverThrust / kMaxThrust, out.motorCmds[m]);
+}
+
+void test_throttle_override_is_clamped()
+{
+    AttitudeAltitudeController ctrl = makeController();
+    Setpoints sp;
+    ControllerMeasurements meas;
+
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, kMaxThrust, ctrl.update(sp, meas, 100.0f).throttle);
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, 0.0f, ctrl.update(sp, meas, -5.0f).throttle);
+}
+
+// After a long override against a large altitude error, the first closed-loop
+// update must match a fresh controller exactly: no integral carried over, no
+// derivative kick from a stale previous measurement.
+void test_override_handover_matches_fresh_altitude_loop()
+{
+    AttitudeAltitudeController used = makeController();
+    AttitudeAltitudeController fresh = makeController();
+    Setpoints sp;
+    sp.altitude = 5.0f;
+
+    ControllerMeasurements early;
+    early.altitude = -3.0f;
+    used.update(sp, early); // closed loop once, so the PID has a stale prevMeasurement
+    for (int k = 0; k < 300; ++k)
+        used.update(sp, early, 8.0f);
+
+    ControllerMeasurements probe;
+    probe.altitude = 1.0f;
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, fresh.update(sp, probe).throttle, used.update(sp, probe).throttle);
+}
+
+// No override argument: behavior identical to before the override existed.
+void test_default_argument_matches_explicit_nullopt()
+{
+    AttitudeAltitudeController a = makeController();
+    AttitudeAltitudeController b = makeController();
+    Setpoints sp;
+    sp.altitude = 1.0f;
+    ControllerMeasurements meas;
+    meas.altitude = 0.2f;
+    for (int k = 0; k < 50; ++k)
+    {
+        const float ta = a.update(sp, meas).throttle;
+        const float tb = b.update(sp, meas, std::nullopt).throttle;
+        TEST_ASSERT_FLOAT_WITHIN(1e-6f, ta, tb);
+    }
+}
+
 int main()
 {
     UNITY_BEGIN();
@@ -267,5 +354,10 @@ int main()
     RUN_TEST(test_altitude_recovers_from_downward_disturbance);
     RUN_TEST(test_roll_torque_mixes_with_expected_signs);
     RUN_TEST(test_reset_matches_fresh_controller);
+    RUN_TEST(test_throttle_override_replaces_altitude_only);
+    RUN_TEST(test_throttle_override_is_mixed_like_normal_throttle);
+    RUN_TEST(test_throttle_override_is_clamped);
+    RUN_TEST(test_override_handover_matches_fresh_altitude_loop);
+    RUN_TEST(test_default_argument_matches_explicit_nullopt);
     return UNITY_END();
 }

@@ -1,3 +1,5 @@
+#ifdef GNC_HARDWARE_BUILD
+
 #include <Arduino.h>
 #include <cmath>
 #include "LittleFS.h"
@@ -151,7 +153,8 @@ void wakeUp()
     }
 
     // Fun
-    if (showWakeUpAscii){
+    if (showWakeUpAscii)
+    {
         wakeUpAscii();
     }
 
@@ -441,3 +444,4 @@ loop:
     // }
 
 */
+#endif

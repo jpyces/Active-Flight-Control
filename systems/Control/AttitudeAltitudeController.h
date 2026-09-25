@@ -2,6 +2,7 @@
 
 #include "eigen.h"
 #include <array>
+#include <optional>
 #include "PIDControllerBase.h"
 #include "Setpoints.h"
 #include "ControllerMeasurements.h"
@@ -44,6 +45,7 @@ namespace gnc
         Eigen::Vector3f m_maxTorque;      // per-axis physical torque limit (N·m)
         float m_hoverThrust, m_maxThrust; // N
         float m_dt;                       // s
+        bool m_throttleOverridden{false}; // previous update() used an override
 
     public:
         AttitudeAltitudeController(
@@ -53,7 +55,15 @@ namespace gnc
             const Eigen::Matrix4f &mixMatrix,
             float hoverThrust, float maxThrust, float dt);
 
-        ControllerOutput update(const Setpoints &sp, const ControllerMeasurements &meas);
+        // throttleOverride (Newtons, same units as the altitude loop's output):
+        // when set, the altitude PID is skipped and this thrust is used instead,
+        // clamped to [0, maxThrust]. The attitude cascade runs normally either way.
+        // Uses: failsafe descent, takeoff spool-up, landing ramp-down, tethered tests.
+        // The altitude PID is reset on the first update after an override ends, so
+        // its stale derivative/integral state cannot kick the throttle.
+        ControllerOutput update(
+            const Setpoints &sp, const ControllerMeasurements &meas,
+            std::optional<float> throttleOverride = std::nullopt);
 
         // Clears all 7 child PIDs' integrator/derivative state.
         void reset();

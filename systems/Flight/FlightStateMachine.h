@@ -1,18 +1,10 @@
 #pragma once
 #include "FlightState.h"
 #include "SensorStatus.h"
+#include "CheckResult.h"
 
 namespace gnc
 {
-    // Result of any externally-run check. The module running the check owns its
-    // own timeout and reports Failed itself.
-    enum class CheckResult
-    {
-        Pending, // still running (or not started)
-        Passed,
-        Failed
-    };
-
     // Active failsafe, independent of the mission state. Listed in priority order
     // for readability only -- priority is enforced in step(), not by value.
     enum class Failsafe

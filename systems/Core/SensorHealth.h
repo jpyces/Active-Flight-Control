@@ -6,8 +6,7 @@
 namespace gnc
 {
     // Debounce and staleness limits for one sensor. Counts are in record() calls
-    // (one per read); times are in microseconds. A stale limit of 0 disables that
-    // check.
+    // (one per read); times are in microseconds. A stale limit of 0 disables that check.
     struct SensorHealthConfig
     {
         std::uint8_t degradeAfterFailures;      // NOMINAL -> DEGRADED

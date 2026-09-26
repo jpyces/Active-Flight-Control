@@ -7,11 +7,7 @@
 namespace gnc
 {
     // Raw(ish) sensor inputs to the state estimator, one struct per loop
-    // iteration. Milestone-2-shaped by construction: every field GNSS-based
-    // navigation will eventually need already exists here, so this struct's
-    // shape never has to change later -- only which fields get populated
-    // changes. Milestone 1 code simply never touches the GNSS fields.
-    //
+    // iteration.
     // Each sensor carries two independent flags, both filled from its driver:
     //   xxxStatus -- health: responding and trustworthy (SensorInterface::getStatus()).
     //   xxxFresh  -- the value is a new sample this tick, not a repeat of an older
@@ -22,15 +18,14 @@ namespace gnc
     // correction) must require fresh; re-fusing a held value overweights it.
     struct SensorReadings
     {
-        // --- Milestone 1: always populated ---
+        // --- always populated ---
 
         Vector3 accel; // accelerometer, g's, body frame
         SensorStatus accelStatus;
         bool accelFresh{false};
 
-        Vector3 gyro; // gyro, rad/s, body frame -- convert from
-                      // dps at the sensor boundary (Imu::getGyroRadPerSec),
-                      // never inline at the point of use
+        Vector3 gyro;   // gyro, rad/s, body frame -- convert from dps at the sensor 
+                        // boundary (Imu::getGyroRadPerSec), never inline at the point of use
         SensorStatus gyroStatus;
         bool gyroFresh{false};
 
@@ -56,6 +51,5 @@ namespace gnc
         std::optional<Vector3> gnssVelocity;
 
         bool gnssFresh{false}; // one NAV-PVT carries both position and velocity
-
     };
 }

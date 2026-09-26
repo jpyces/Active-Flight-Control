@@ -8,8 +8,7 @@
 #include "Altimeter.h"
 #include "Imu.h"
 #include "Gnss.h"
-#include "Magnetometer.h" // matches lowercase convention of the other sensor headers above —
-                          // rename Magnetometer.h/.cpp to magnetometer.h/.cpp if they aren't already
+#include "Magnetometer.h" 
 
 using namespace gnc;
 
@@ -83,7 +82,7 @@ constexpr unsigned long SENSOR_TICK_MS = 20;      // ~50Hz — comfortably faste
                                                   // fast enough to drain GNSS_SERIAL before it backs up, slow enough that threshold tuning stays sane
 constexpr unsigned long PRINT_INTERVAL_MS = 1000; // debug cadence, independent of sensor servicing
 
-// // LED heartbeat — a simple "is the board alive" visual, independent of sensor/print timing
+// // LED heartbeat — a simple "is the board alive" visual tell
 unsigned long lastLedToggle = 0;
 bool ledState = false;
 constexpr unsigned long LED_TOGGLE_INTERVAL_MS = 1000; // toggles once a second -> on/off every 1s

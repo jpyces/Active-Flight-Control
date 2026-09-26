@@ -96,7 +96,10 @@ namespace gnc
             break;
         }
 
-        // -- Vertical channel. predict() every step; correct() only on good baro.
+        // -- Vertical channel. predict() every step; correct() only on a good, new
+        // baro sample. The baro is slower than the loop, so between samples the
+        // reading is a held repeat; correcting on it again would treat one
+        // measurement as several and overweight the baro relative to kfR.
         // With no usable accel, predict with aMeas = the bias estimate, i.e. zero
         // net acceleration (constant-velocity propagation) -- verticalAccelFromBody
         // on a zero reading would read as free fall (-g).
@@ -104,7 +107,7 @@ namespace gnc
                                 ? verticalAccelFromBody(in.accel * m_cfg.gravity, m_attitude, m_cfg.gravity)
                                 : m_kf.accelBias();
         m_kf.predict(aVert, dt);
-        if (in.baroStatus == SensorStatus::NOMINAL)
+        if (in.baroStatus == SensorStatus::NOMINAL && in.baroFresh)
         {
             m_kf.correct(in.baroAltitude);
         }

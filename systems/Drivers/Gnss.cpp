@@ -9,8 +9,8 @@ using namespace gnc;
 GNSS::GNSS()
     : gnss(), gnc_DEBUG(false), status(SensorStatus::UNINITIALIZED),
       consecutiveSuccesses(0), consecutiveFailures(0), lastPvtMillis(0),
-      lastTimeOfWeekMs(0), hasTimeOfWeek(false), hasEverFixed(false),
-      firstFixDeadlineMillis(0) {
+      lastTimeOfWeekMs(0), hasTimeOfWeek(false), m_fresh(false), hasEverFixed(false),
+      hasValidFix(false), firstFixDeadlineMillis(0) {
       };
 
 bool GNSS::begin()
@@ -180,6 +180,7 @@ GnssData GNSS::getData(GnssData d)
     d.timeOfWeekMs = gnss.getTimeOfWeek();
 
     bool timeAdvanced = !hasTimeOfWeek || (d.timeOfWeekMs != lastTimeOfWeekMs);
+    m_fresh = timeAdvanced;
     if (timeAdvanced)
     {
         hasTimeOfWeek = true;
@@ -192,6 +193,11 @@ GnssData GNSS::getData(GnssData d)
     }
 
     return d;
+}
+
+bool GNSS::isFresh() const
+{
+    return m_fresh;
 }
 
 bool GNSS::hasFix() const

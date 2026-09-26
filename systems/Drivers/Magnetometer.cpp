@@ -12,156 +12,164 @@ using namespace gnc;
 constexpr float Magnetometer::SENS_XY_UT_PER_LSB[8][4];
 constexpr float Magnetometer::SENS_Z_UT_PER_LSB[8][4];
 
+namespace
+{
+    // Counts are reads.
+    constexpr SensorHealthConfig kHealthConfig{
+        4,      // degradeAfterFailures
+        8,      // failAfterFailures
+        6,      // recoverAfterSuccesses
+        16,     // fullRecoverAfterSuccesses
+        100000, // staleDegradeUs
+        500000, // staleFailUs
+    };
+
+    // Wait tconv * factor + extra before collecting a conversion. Waiting longer
+    // costs nothing now that nothing blocks. The library's blocking readData()
+    // adds a flat 10 ms ("doesn't always work" without it, cause undocumented);
+    // if bench reads fail at this margin, raise it before suspecting anything else.
+    constexpr float kConvMarginFactor = 1.25F;
+    constexpr std::uint32_t kConvMarginUs = 1000;
+
+    constexpr Magnetometer::MagSample kInvalidSample{{NAN, NAN, NAN}, NAN, false};
+}
+
 Magnetometer::Magnetometer()
-    : mag(),
-      status(SensorStatus::UNINITIALIZED),
-      consecutiveSuccesses(0),
-      consecutiveFailures(0) {}
+    : mag(), m_health(kHealthConfig), m_convState(ConversionState::Idle),
+      m_convStartUs(0), m_convTimeUs(0), m_lastSample(kInvalidSample) {}
 
 bool Magnetometer::begin(TwoWire *wireBus)
 {
     bool ok = mag.begin_I2C(MLX90393_MAG_ADDRESS, wireBus);
-
-    if (ok)
-    {
-        status = SensorStatus::NOMINAL;
-        consecutiveSuccesses = 0;
-        consecutiveFailures = 0;
-    }
-    else
-    {
-        status = SensorStatus::FAILED;
-        consecutiveFailures = FAILURE_THRESHOLD;
-        consecutiveSuccesses = 0;
-    }
-
+    m_health.begin(ok, micros());
+    updateConversionTime();
+    restartConversions();
     return ok;
+}
+
+bool Magnetometer::startConversion(std::uint32_t nowUs)
+{
+    const bool ok = mag.startSingleMeasurement();
+    m_convState = ok ? ConversionState::Converting : ConversionState::Idle;
+    m_convStartUs = nowUs;
+    return ok;
+}
+
+void Magnetometer::restartConversions()
+{
+    m_convState = ConversionState::Idle;
+    m_lastSample = kInvalidSample;
+}
+
+void Magnetometer::updateConversionTime()
+{
+    // mlx90393_tconv (ms) is the library's copy of the datasheet table, indexed
+    // [digital filter 0-7][oversampling 0-3]; the getters return cached settings.
+    const auto filt = static_cast<std::uint8_t>(mag.getFilter());
+    const auto osr = static_cast<std::uint8_t>(mag.getOversampling());
+    const float tconvMs = mlx90393_tconv[filt & 0x07][osr & 0x03];
+    m_convTimeUs = static_cast<std::uint32_t>(tconvMs * 1000.0F * kConvMarginFactor) + kConvMarginUs;
 }
 
 SensorStatus Magnetometer::checkHealth()
 {
     getMagSample();
-    return status;
-}
-
-void Magnetometer::recordReadResult(bool ok)
-{
-    if (ok)
-    {
-        consecutiveSuccesses++;
-        consecutiveFailures = 0;
-    }
-    else
-    {
-        consecutiveFailures++;
-        consecutiveSuccesses = 0;
-    }
-
-    // Debounced state machine: a run of failures degrades and eventually fails the sensor;
-    // a subsequent run of clean reads climbs back up rather than snapping straight to nominal.
-    switch (status)
-    {
-    case SensorStatus::NOMINAL:
-        if (consecutiveFailures >= FAILURE_THRESHOLD)
-        {
-            status = SensorStatus::FAILED;
-        }
-        else if (consecutiveFailures >= DEGRADE_THRESHOLD)
-        {
-            status = SensorStatus::DEGRADED;
-        }
-        break;
-
-    case SensorStatus::DEGRADED:
-        if (consecutiveFailures >= FAILURE_THRESHOLD)
-        {
-            status = SensorStatus::FAILED;
-        }
-        else if (consecutiveSuccesses >= FULL_RECOVERY_THRESHOLD)
-        {
-            status = SensorStatus::NOMINAL;
-        }
-        break;
-
-    case SensorStatus::FAILED:
-        if (consecutiveSuccesses >= RECOVERY_THRESHOLD)
-        {
-            status = SensorStatus::DEGRADED;
-            consecutiveSuccesses = 0;
-        }
-        break;
-
-    case SensorStatus::UNINITIALIZED:
-    default:
-        // checkHealth() before begin(); leave as-is until begin() runs.
-        break;
-    }
-
-    return;
+    return m_health.status();
 }
 
 SensorStatus Magnetometer::getStatus() const
 {
-    return status;
+    return m_health.status();
+}
+
+bool Magnetometer::isFresh() const
+{
+    return m_health.isFresh();
 }
 
 bool Magnetometer::reset()
 {
+    restartConversions();
     return mag.reset();
 }
 
 bool Magnetometer::exitMode()
 {
+    restartConversions();
     return mag.exitMode();
 }
 
-bool Magnetometer::startSingleMeasurement()
+const Magnetometer::MagSample &Magnetometer::getLastSample() const
 {
-    return mag.startSingleMeasurement();
+    return m_lastSample;
 }
 
-float Magnetometer::getFieldXUT()
+float Magnetometer::getFieldXUT() const
 {
-    return getFieldUT().x;
+    return m_lastSample.fieldUT.x;
 }
 
-float Magnetometer::getFieldYUT()
+float Magnetometer::getFieldYUT() const
 {
-    return getFieldUT().y;
+    return m_lastSample.fieldUT.y;
 }
 
-float Magnetometer::getFieldZUT()
+float Magnetometer::getFieldZUT() const
 {
-    return getFieldUT().z;
+    return m_lastSample.fieldUT.z;
 }
 
-Vector3 Magnetometer::getFieldUT()
+Vector3 Magnetometer::getFieldUT() const
 {
-    return getMagSample().fieldUT;
+    return m_lastSample.fieldUT;
 }
 
-float Magnetometer::getFieldMagnitudeUT()
+float Magnetometer::getFieldMagnitudeUT() const
 {
-    return getMagSample().fieldMagnitudeUT;
+    return m_lastSample.fieldMagnitudeUT;
 }
 
 Magnetometer::MagSample Magnetometer::getMagSample()
 {
-    MagSample sample{};
-    sample.valid = mag.readData(&sample.fieldUT.x, &sample.fieldUT.y, &sample.fieldUT.z);
-    recordReadResult(sample.valid);
+    const std::uint32_t now = micros();
 
-    if (!sample.valid)
+    if (m_convState == ConversionState::Idle)
     {
-        sample.fieldUT = {NAN, NAN, NAN};
-        sample.fieldMagnitudeUT = NAN;
-        return sample;
+        // Nothing in flight: the start command is this tick's bus transaction.
+        const bool ok = startConversion(now);
+        m_health.record(ok, false, now);
+        return m_lastSample;
     }
 
-    sample.fieldMagnitudeUT = sqrtf(sample.fieldUT.x * sample.fieldUT.x +
-                                    sample.fieldUT.y * sample.fieldUT.y +
-                                    sample.fieldUT.z * sample.fieldUT.z);
-    return sample;
+    if ((now - m_convStartUs) < m_convTimeUs)
+    {
+        // Conversion still running; the sensor is deliberately not touched.
+        m_health.idle(now);
+        return m_lastSample;
+    }
+
+    // Conversion done: collect it.
+    MagSample sample{};
+    sample.valid = mag.readMeasurement(&sample.fieldUT.x, &sample.fieldUT.y, &sample.fieldUT.z);
+    m_health.record(sample.valid, sample.valid, now);
+
+    if (sample.valid)
+    {
+        sample.fieldMagnitudeUT = sqrtf(sample.fieldUT.x * sample.fieldUT.x +
+                                        sample.fieldUT.y * sample.fieldUT.y +
+                                        sample.fieldUT.z * sample.fieldUT.z);
+        m_lastSample = sample;
+    }
+    else
+    {
+        m_lastSample = kInvalidSample; // never keep serving a value the sensor failed to confirm
+    }
+
+    // Start the next conversion right away so it runs while the loop does other
+    // work. If the start fails, the state drops to Idle and the next tick retries
+    // it (and records that attempt), keeping one health record per tick.
+    startConversion(now);
+    return m_lastSample;
 }
 
 bool Magnetometer::configureForFlight(mlx90393_gain gain,
@@ -178,6 +186,8 @@ bool Magnetometer::configureForFlight(mlx90393_gain gain,
     ok &= mag.setOversampling(oversampling);
     ok &= mag.setFilter(filter);
 
+    updateConversionTime();
+    restartConversions();
     return ok;
 }
 
@@ -195,7 +205,7 @@ float Magnetometer::fullScaleUT(mlx90393_axis axis)
 
 bool Magnetometer::isFieldNearLimit(float marginUT)
 {
-    return isFieldNearLimit(getMagSample(), marginUT);
+    return isFieldNearLimit(m_lastSample, marginUT);
 }
 
 bool Magnetometer::isFieldNearLimit(const MagSample &sample, float marginUT)
@@ -232,26 +242,35 @@ mlx90393_filter Magnetometer::getFilter()
 
 bool Magnetometer::setGain(mlx90393_gain gain)
 {
+    restartConversions();
     return mag.setGain(gain);
 }
 
 bool Magnetometer::setResolution(mlx90393_axis axis, mlx90393_resolution resolution)
 {
+    restartConversions();
     return mag.setResolution(axis, resolution);
 }
 
 bool Magnetometer::setOversampling(mlx90393_oversampling oversampling)
 {
-    return mag.setOversampling(oversampling);
+    restartConversions();
+    const bool ok = mag.setOversampling(oversampling);
+    updateConversionTime();
+    return ok;
 }
 
 bool Magnetometer::setFilter(mlx90393_filter filter)
 {
-    return mag.setFilter(filter);
+    restartConversions();
+    const bool ok = mag.setFilter(filter);
+    updateConversionTime();
+    return ok;
 }
 
 bool Magnetometer::setTrigInt(bool state)
 {
+    restartConversions();
     return mag.setTrigInt(state);
 }
 

@@ -51,7 +51,8 @@ Active-Flight-Control/
 ├── src/                main.cpp — hardware I/O and fixed-rate loop only
 ├── systems/            project libraries (PlatformIO lib_dir)
 │   ├── Core/           shared types and math: Vector3, Quaternion, SensorReadings,
-│   │                   StateEstimate, Setpoints, FlightState, CheckResult, LogRecord
+│   │                   StateEstimate, Setpoints, FlightState, CheckResult, LogRecord,
+│   │                   SensorHealth (debounced health + freshness), SensorInterface
 │   ├── Estimation/     ComplimentaryFilter, Madgwick, VerticalKF, VerticalAccel, StateEstimator
 │   ├── Control/        PIDControllerBase, AttitudeAltitudeController, MotorMixer
 │   ├── Flight/         FlightStateMachine, FlightCore, command sources, flight helpers

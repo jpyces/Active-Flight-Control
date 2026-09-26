@@ -44,19 +44,36 @@ namespace
         return c;
     }
 
-    // At rest, level. Accel is in g's per SensorReadings.h.
+    // At rest, level. Accel is in g's per SensorReadings.h. Every sensor
+    // delivers a new sample each step unless a test says otherwise.
     SensorReadings stillReadings()
     {
         SensorReadings r{};
         r.accel = {0.0f, 0.0f, 1.0f};
         r.accelStatus = SensorStatus::NOMINAL;
+        r.accelFresh = true;
         r.gyro = {0.0f, 0.0f, 0.0f};
         r.gyroStatus = SensorStatus::NOMINAL;
+        r.gyroFresh = true;
         r.mag = {1.0f, 0.0f, 0.0f};
         r.magStatus = SensorStatus::NOMINAL;
+        r.magFresh = true;
         r.baroAltitude = 0.0f;
         r.baroStatus = SensorStatus::NOMINAL;
+        r.baroFresh = true;
         return r;
+    }
+
+    void assertKfMatches(const VerticalKF &ref, const VerticalKF &actual)
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            TEST_ASSERT_FLOAT_WITHIN(1e-6f, ref.state()(i), actual.state()(i));
+            for (int j = 0; j < 3; ++j)
+            {
+                TEST_ASSERT_FLOAT_WITHIN(1e-6f, ref.covariance()(i, j), actual.covariance()(i, j));
+            }
+        }
     }
 
     void runSteps(StateEstimator &est, const SensorReadings &r, int n)
@@ -418,6 +435,63 @@ void test_output_altitude_matches_kf()
     TEST_ASSERT_EQUAL_FLOAT(est.verticalKF().velocity(), out.verticalVelocity);
 }
 
+void test_vertical_kf_skips_stale_baro()
+{
+    const StateEstimatorConfig c = makeConfig();
+    StateEstimator est(c);
+    VerticalKF ref(c.kfQ, c.kfR, c.kfX0, c.kfP0);
+
+    // Healthy baro, but no new sample: must not be fused.
+    SensorReadings stale = stillReadings();
+    stale.baroFresh = false;
+    stale.baroAltitude = 3.0f; // would visibly move the estimate if fused
+    for (int k = 0; k < 5; ++k)
+    {
+        est.update(stale, kDt);
+        ref.predict(0.0f, kDt);
+    }
+    assertKfMatches(ref, est.verticalKF());
+}
+
+// A baro slower than the loop: the same reading is held for several steps and
+// only marked fresh when it changes. The KF must correct once per new sample,
+// not once per step (which would shrink P as if every repeat were independent).
+void test_held_baro_is_corrected_once_per_new_sample()
+{
+    const StateEstimatorConfig c = makeConfig();
+    StateEstimator est(c);
+    VerticalKF ref(c.kfQ, c.kfR, c.kfX0, c.kfP0);
+
+    constexpr int kLoopStepsPerBaroSample = 5; // e.g. 100 Hz baro in a 500 Hz loop
+    SensorReadings r = stillReadings();
+    for (int k = 0; k < 4 * kLoopStepsPerBaroSample; ++k)
+    {
+        r.baroFresh = (k % kLoopStepsPerBaroSample) == 0;
+        if (r.baroFresh)
+        {
+            r.baroAltitude = 0.5f * static_cast<float>(k / kLoopStepsPerBaroSample + 1);
+        }
+
+        est.update(r, kDt);
+        ref.predict(0.0f, kDt);
+        if (r.baroFresh)
+        {
+            ref.correct(r.baroAltitude);
+        }
+    }
+    assertKfMatches(ref, est.verticalKF());
+}
+
+void test_readings_default_to_not_fresh()
+{
+    const SensorReadings r{};
+    TEST_ASSERT_FALSE(r.accelFresh);
+    TEST_ASSERT_FALSE(r.gyroFresh);
+    TEST_ASSERT_FALSE(r.magFresh);
+    TEST_ASSERT_FALSE(r.baroFresh);
+    TEST_ASSERT_FALSE(r.gnssFresh);
+}
+
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
@@ -439,6 +513,9 @@ int main(int argc, char **argv)
     RUN_TEST(test_yaw_not_observable_outside_nominal);
     RUN_TEST(test_vertical_kf_predicts_every_step_regardless_of_baro);
     RUN_TEST(test_vertical_kf_corrects_only_when_baro_nominal);
+    RUN_TEST(test_vertical_kf_skips_stale_baro);
+    RUN_TEST(test_held_baro_is_corrected_once_per_new_sample);
+    RUN_TEST(test_readings_default_to_not_fresh);
     RUN_TEST(test_accel_in_g_is_scaled_before_vertical_channel);
     RUN_TEST(test_unusable_accel_coasts_vertical_channel);
     RUN_TEST(test_unusable_gyro_is_not_integrated);

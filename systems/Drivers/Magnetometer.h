@@ -12,6 +12,8 @@ Handles magnetometer interaction stuff directly with declarations to make stuff 
 #include "Vector3.h"
 #include "Adafruit_MLX90393.h"
 
+#include "SensorHealth.h"
+#include "SensorInterface.h"
 #include "SensorStatus.h"
 
 
@@ -20,7 +22,7 @@ Handles magnetometer interaction stuff directly with declarations to make stuff 
 namespace gnc
 {
 
-    class Magnetometer
+    class Magnetometer : public SensorInterface
     {
     public:
 
@@ -36,14 +38,25 @@ namespace gnc
         // Sensor
         Adafruit_MLX90393 mag;
 
-        // Meta
-        SensorStatus status;
-        std::uint8_t consecutiveSuccesses;                          // helper to count how many status checks succeeded
-        std::uint8_t consecutiveFailures;                           // helper to count how many status checks failed
-        static constexpr std::uint8_t FAILURE_THRESHOLD = 8;        // 40ms at 100Hz
-        static constexpr std::uint8_t RECOVERY_THRESHOLD = 6;       // 60ms at 100Hz
-        static constexpr std::uint8_t DEGRADE_THRESHOLD = 4;        // 40ms at 100Hz
-        static constexpr std::uint8_t FULL_RECOVERY_THRESHOLD = 16; // 160ms at 100Hz
+        // Health + freshness, updated only by getMagSample()
+        SensorHealth m_health;
+
+        // Non-blocking conversion cycle driven by getMagSample(): start a single
+        // measurement on one tick, collect it on the first tick after the conversion
+        // time has passed, and start the next one immediately.
+        enum class ConversionState : std::uint8_t
+        {
+            Idle,      // no conversion in flight (after begin/config change/failed start)
+            Converting // started at m_convStartUs, result due after m_convTimeUs
+        };
+        ConversionState m_convState;
+        std::uint32_t m_convStartUs;
+        std::uint32_t m_convTimeUs; // from the datasheet tconv for the current filter/OSR, plus margin
+        MagSample m_lastSample;     // latest collected sample, held between conversions
+
+        bool startConversion(std::uint32_t nowUs);
+        void restartConversions(); // discard any in-flight conversion (settings changed)
+        void updateConversionTime();
 
         // MLX90393 output is a 16-bit 2's-complement value (span ±2^15 counts); multiplying
         // that span by the datasheet SENS_XY/SENS_Z (µT/LSB) figure for the active
@@ -76,7 +89,6 @@ namespace gnc
 
         // Full-scale magnitude (µT) for one axis at the currently configured gain/resolution.
         float fullScaleUT(mlx90393_axis axis);
-        void recordReadResult(bool ok);
 
     public:
         // Creates the driver wrapper; call begin() before reading data.
@@ -87,11 +99,15 @@ namespace gnc
         // per config.h / hardware docs) — pass &Wire or &Wire2 explicitly if that ever changes.
         bool begin(TwoWire *wireBus = &Wire1);
 
-        // Updates the health state using a measurement-read check and debounce thresholds.
+        // Delegates to getMagSample() and discards the sample. Call one or the other
+        // once per tick, not both: each call advances the conversion cycle.
         SensorStatus checkHealth();
 
-        // Returns the last health state calculated by begin() or checkHealth().
-        SensorStatus getStatus() const;
+        // Returns the last health state calculated by begin() or getMagSample().
+        SensorStatus getStatus() const override;
+
+        // True if the last getMagSample() collected a newly completed conversion.
+        bool isFresh() const override;
 
         // Resets the sensor and re-applies its default power-on configuration.
         bool reset();
@@ -99,22 +115,22 @@ namespace gnc
         // Exits the sensor's current acquisition mode (burst/single/wake-on-change).
         bool exitMode();
 
-        // Kicks off a single on-sensor conversion; pair with readField() once ready.
-        bool startSingleMeasurement();
-
-        // Converted magnetic field in microtesla for each axis.
-        float getFieldXUT();
-        float getFieldYUT();
-        float getFieldZUT();
-
-        // Converted magnetic field vector in microtesla.
-        Vector3 getFieldUT();
-
-        // Vector magnitude of magnetic field in microtesla; useful for hard-iron sanity checks.
-        float getFieldMagnitudeUT();
-
-        // Reads converted field and vector magnitude together.
+        // The per-tick read, never blocks. Advances the conversion cycle by one step:
+        //   - conversion still running: returns the held last sample (not fresh)
+        //   - conversion done: reads it (fresh on success), then starts the next one
+        //   - nothing in flight: starts a conversion, returns the held last sample
+        // Call exactly once per tick. The held sample is NaN/invalid until the first
+        // conversion completes, and after a failed read.
         MagSample getMagSample();
+
+        // Accessors for the held sample (latest completed conversion). They do not
+        // touch the sensor or advance the cycle.
+        const MagSample &getLastSample() const;
+        float getFieldXUT() const;
+        float getFieldYUT() const;
+        float getFieldZUT() const;
+        Vector3 getFieldUT() const;
+        float getFieldMagnitudeUT() const; // useful for hard-iron sanity checks
 
         // Configures broad-range, high-performance sampling defaults for rockets/drones.
         bool configureForFlight(mlx90393_gain gain = MLX90393_GAIN_1X,
@@ -124,7 +140,7 @@ namespace gnc
 
         // Detects readings close to the configured full-scale range so saturation can be flagged.
         bool isFieldNearLimit(const MagSample &sample, float marginUT = 5.0F);
-        bool isFieldNearLimit(float marginUT = 5.0F);
+        bool isFieldNearLimit(float marginUT = 5.0F); // checks the held sample
 
         // getters
         mlx90393_gain getGain();
@@ -132,7 +148,8 @@ namespace gnc
         mlx90393_oversampling getOversampling();
         mlx90393_filter getFilter();
 
-        // setters
+        // setters -- each discards any conversion in flight, so no sample taken
+        // under the old settings is ever collected
         bool setGain(mlx90393_gain gain);
         bool setResolution(mlx90393_axis axis, mlx90393_resolution resolution);
         bool setOversampling(mlx90393_oversampling oversampling);

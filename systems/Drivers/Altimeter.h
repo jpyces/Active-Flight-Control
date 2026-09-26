@@ -10,24 +10,32 @@ altimeter stuff
 
 #include <Adafruit_BMP280.h>
 
+#include "SensorHealth.h"
+#include "SensorInterface.h"
 #include "SensorStatus.h"
 
 namespace gnc
 {
-    class Altimeter
+    class Altimeter : public SensorInterface
     {
+    public:
+        // Coherent sample for the flight loop: temperature and pressure are read once
+        // each and altitude is derived from that same pressure reading.
+        struct BaroSample
+        {
+            float temperatureC;
+            float pressurePa;
+            float altitudeM;
+            bool valid;
+        };
+
     private:
         // Sensor
         Adafruit_BMP280 bmp;
 
-        // Meta
-        SensorStatus status;
-        std::uint8_t consecutiveSuccesses;                          // helper to count how many status checks succeeded
-        std::uint8_t consecutiveFailures;                           // helper to count how many status checks failed
-        static constexpr std::uint8_t FAILURE_THRESHOLD = 8;        // 40ms at 100Hz
-        static constexpr std::uint8_t RECOVERY_THRESHOLD = 6;       // 60ms at 100Hz
-        static constexpr std::uint8_t DEGRADE_THRESHOLD = 4;        // 40ms at 100Hz
-        static constexpr std::uint8_t FULL_RECOVERY_THRESHOLD = 16; // 160ms at 100Hz
+        // Health + freshness, updated only by getBaroSample()
+        SensorHealth m_health;
+        std::uint32_t m_lastNewSampleUs;
 
     public:
         // constructor declaration
@@ -35,10 +43,23 @@ namespace gnc
 
         // Method declarations
         bool begin();
-        SensorStatus checkHealth();
-        SensorStatus getStatus() const;
 
-        // getters
+        // Delegates to getBaroSample() (the one read path that updates health and
+        // freshness) and discards the sample. Call one or the other once per tick,
+        // not both.
+        SensorStatus checkHealth();
+        SensorStatus getStatus() const override;
+
+        // True if the last getBaroSample() is guaranteed to hold a conversion that
+        // no earlier fresh sample contained. See getBaroSample() for how.
+        bool isFresh() const override;
+
+        // The per-tick read: bus ACK check, then one temperature and one pressure
+        // read. valid is false (and fields NaN) if the sensor does not ACK.
+        BaroSample getBaroSample(float seaLevelhPa = 1013.25F);
+
+        // Raw passthrough getters for debugging; they do not update health or
+        // freshness.
         float getTemperature();
         float getPressure();
         float getAltitude(float seaLevelhPa = (1013.25F));

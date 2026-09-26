@@ -47,7 +47,8 @@ namespace gnc
     //                 (failsafe branch 2.1); this class just avoids fusing garbage.
     //   mag         : usable only if NOMINAL (Madgwick's fixed gain can't down-weight
     //                 a DEGRADED sensor). Unusable -> zero, per Madgwick.h's contract.
-    //   baro        : KF correct() only if NOMINAL; predict() always runs.
+    //   baro        : KF correct() only if NOMINAL and fresh (a new sample this
+    //                 tick); predict() always runs.
     class StateEstimator
     {
     public:

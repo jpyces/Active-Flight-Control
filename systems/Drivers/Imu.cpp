@@ -11,50 +11,47 @@ using namespace gnc;
 namespace
 {
     constexpr float kDegToRad = 3.14159265358979323846f / 180.0f;
+
+    // Counts are reads. Staleness: at the 416 Hz ODR set by configureForFlight() a
+    // new sample exists every ~2.4 ms, so 50 ms without one is a real fault.
+    constexpr SensorHealthConfig kHealthConfig{
+        2,      // degradeAfterFailures
+        4,      // failAfterFailures
+        9,      // recoverAfterSuccesses
+        15,     // fullRecoverAfterSuccesses
+        50000,  // staleDegradeUs
+        200000, // staleFailUs
+    };
+
+    constexpr std::uint8_t kAccelGyroReady = ACCEL_DATA_READY | GYRO_DATA_READY;
 }
 
 Imu::Imu()
-    : imu(), status(SensorStatus::UNINITIALIZED), consecutiveFailures(0), consecutiveSuccesses(0)
+    : imu(), m_health(kHealthConfig)
 {
 }
 
 bool Imu::begin()
 {
     bool ok = imu.begin(kLsm6dsoImuAddress, IMU_WIRE);
-    status = ok ? SensorStatus::NOMINAL : SensorStatus::FAILED;
+    m_health.begin(ok, micros());
     return ok;
 }
 
 SensorStatus Imu::checkHealth()
 {
-    IMU_WIRE.beginTransmission(kLsm6dsoImuAddress);
-    bool ack = (IMU_WIRE.endTransmission() == 0);
-
-    if (ack)
-    {
-        consecutiveFailures = 0;
-        consecutiveSuccesses++;
-        if (consecutiveSuccesses >= FULL_RECOVERY_THRESHOLD)
-            status = SensorStatus::NOMINAL;
-        else if (consecutiveSuccesses >= RECOVERY_THRESHOLD)
-            status = SensorStatus::DEGRADED;
-    }
-    else
-    {
-        consecutiveSuccesses = 0;
-        consecutiveFailures++;
-        if (status != SensorStatus::FAILED && consecutiveFailures >= DEGRADE_THRESHOLD)
-            status = SensorStatus::DEGRADED;
-        if (consecutiveFailures >= FAILURE_THRESHOLD)
-            status = SensorStatus::FAILED;
-    }
-
-    return status;
+    getMotionSample();
+    return m_health.status();
 }
 
 SensorStatus Imu::getStatus() const
 {
-    return status;
+    return m_health.status();
+}
+
+bool Imu::isFresh() const
+{
+    return m_health.isFresh();
 }
 
 std::int16_t Imu::getRawAccelX()
@@ -213,6 +210,19 @@ float Imu::getTemperatureF()
 // fetched above avoids that.
 Imu::MotionSample Imu::getMotionSample()
 {
+    // readRegister() rather than listenDataReady(): the latter returns 0xFF on a
+    // bus error, which reads as "all data ready".
+    std::uint8_t flags = 0;
+    const bool readOk = imu.readRegister(&flags, STATUS_REG) == IMU_SUCCESS;
+    const bool newData = readOk && (flags & kAccelGyroReady) == kAccelGyroReady;
+    m_health.record(readOk, newData, micros());
+
+    if (!readOk)
+    {
+        const Vector3 nanVec{NAN, NAN, NAN};
+        return {nanVec, nanVec, NAN, NAN, NAN};
+    }
+
     Vector3 accel = getAccelG();
     Vector3 gyro = getGyroDps();
 
@@ -256,7 +266,7 @@ bool Imu::configureForFlight(std::uint8_t accelRangeG, std::uint16_t gyroRangeDp
     ok = imu.setHighPerfGyro(true) && ok;
 
     if (!ok)
-        status = SensorStatus::DEGRADED;
+        m_health.degrade();
 
     return ok;
 }

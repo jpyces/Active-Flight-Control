@@ -9,6 +9,8 @@ Handles IMU interaction stuff directly with declarations to make stuff public
 #include <cstdint>
 
 #include "SparkFunLSM6DSO.h"
+#include "SensorHealth.h"
+#include "SensorInterface.h"
 #include "SensorStatus.h"
 #include "Vector3.h"
 
@@ -17,7 +19,7 @@ namespace gnc
 
     inline constexpr std::uint8_t kLsm6dsoImuAddress = 0x6A; // can be 0x6A with a specific hardware setup
 
-    class Imu
+    class Imu : public SensorInterface
     {
     public:
         // One-shot raw register readout for logging, calibration, and sanity checks.
@@ -46,20 +48,22 @@ namespace gnc
         // Sensor (third-party type — stays unqualified, it's not yours to namespace)
         LSM6DSO imu;
 
-        // Meta
-        SensorStatus status;
-        std::uint8_t consecutiveFailures;
-        std::uint8_t consecutiveSuccesses;
-        static constexpr std::uint8_t FAILURE_THRESHOLD = 4;
-        static constexpr std::uint8_t RECOVERY_THRESHOLD = 9;
-        static constexpr std::uint8_t FULL_RECOVERY_THRESHOLD = 15;
-        static constexpr std::uint8_t DEGRADE_THRESHOLD = 2;
+        // Health + freshness, updated only by getMotionSample()
+        SensorHealth m_health;
 
     public:
         Imu();
         bool begin();
+
+        // Delegates to getMotionSample() (the one read path that updates health and
+        // freshness) and discards the sample. Call one or the other once per tick,
+        // not both: a second read in the same tick sees no new data.
         SensorStatus checkHealth();
-        SensorStatus getStatus() const;
+        SensorStatus getStatus() const override;
+
+        // True if the last getMotionSample() returned a new accel+gyro sample
+        // (both STATUS_REG data-ready bits set).
+        bool isFresh() const override;
 
         std::int16_t getRawAccelX();
         std::int16_t getRawAccelY();
@@ -90,6 +94,11 @@ namespace gnc
         float getTemperatureC();
         float getTemperatureF();
 
+        // The per-tick read: checks STATUS_REG for new data, records health and
+        // freshness, then reads accel/gyro/temperature. Returns NaN fields if the
+        // status read fails. The individual getters above are raw passthroughs for
+        // debugging and do not update health or freshness. Call this before any of
+        // them in a tick: reading the output registers clears the data-ready bits.
         MotionSample getMotionSample();
 
         std::uint8_t getDataReadyFlags();

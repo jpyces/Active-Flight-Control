@@ -10,6 +10,7 @@ Handles reading directly from the GPS with declarations to make stuff public
 
 #include <SparkFun_u-blox_GNSS_v3.h>
 
+#include "SensorInterface.h"
 #include "SensorStatus.h"
 
 namespace gnc
@@ -94,7 +95,7 @@ namespace gnc
         }
     };
 
-    class GNSS
+    class GNSS : public SensorInterface
     {
     private:
         // Sensor
@@ -108,6 +109,7 @@ namespace gnc
         unsigned long lastPvtMillis;       // millis() timestamp of the last observed NAV-PVT iTOW update
         uint32_t lastTimeOfWeekMs;
         bool hasTimeOfWeek;
+        bool m_fresh; // last getData() saw a new NAV-PVT (iTOW advanced)
 
         // Cold-start fix acquisition (can legitimately take 20-30s+ depending on sky visibility)
         // is not a health problem — NAV-PVT messages flow at the full configured rate the whole
@@ -163,7 +165,14 @@ namespace gnc
         // hardware-touching path, matching Magnetometer::checkHealth()'s delegation through
         // getMagSample() for the same reason.
         SensorStatus checkHealth();
-        SensorStatus getStatus() const;
+        SensorStatus getStatus() const override;
+
+        // True if the last getData() saw a new NAV-PVT solution (iTOW advanced).
+        // Independent of hasFix(): a fresh solution can still lack a usable fix.
+        // Health keeps its own GNSS-specific logic (first-fix grace window, bad-fix
+        // counting, silence timeouts) rather than SensorHealth, since a bad fix is
+        // not a failed read.
+        bool isFresh() const override;
         bool hasFix() const; // true iff the most recent read had fixType>=3 and getGnssFixOk() —
                              // data VALIDITY, independent of checkHealth()'s health/liveness verdict.
                              // A cold-start acquisition window can be status()==NOMINAL with hasFix()==false

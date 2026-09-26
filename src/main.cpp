@@ -54,6 +54,24 @@ static bool cachedFieldNearLimit = false;
 
 static GNSS::HealthDiagnostics cachedGnssDiag{};
 
+// New (fresh) samples seen per sensor since the last print -- printed as an
+// effective sample rate, which shows whether each sensor keeps up with the tick.
+static unsigned long imuNewSamples = 0;
+static unsigned long altiNewSamples = 0;
+static unsigned long magNewSamples = 0;
+static unsigned long gnssNewSamples = 0;
+
+// The single altimeter read per tick: updates health/freshness and the caches.
+void readAltimeter()
+{
+    const Altimeter::BaroSample baro = alti.getBaroSample(seaLevelPressurehPa);
+    altiStatus = alti.getStatus();
+    cachedTemperatureC = baro.temperatureC;
+    rawPressurePa = baro.pressurePa;
+    pressurehPa = rawPressurePa / 100;
+    cachedAltitudeM = baro.altitudeM;
+}
+
 // General Servicing
 // // Timing State for sensors and loops
 unsigned long loopCount = 0;
@@ -200,16 +218,15 @@ void sensorStartup()
 
     // Seed the caches so the first print (up to PRINT_INTERVAL_MS after boot) has something
     // real to show instead of zero-initialized placeholders.
-    altiStatus = alti.checkHealth();
-    imuStatus = imu.checkHealth();
+    // One read per sensor: getBaroSample()/getMotionSample() are the paths that
+    // update health and freshness (checkHealth() would be a second, stale read).
+    readAltimeter();
 
-    cachedTemperatureC = alti.getTemperature();
-    rawPressurePa = alti.getPressure();
-    pressurehPa = rawPressurePa / 100;
-    cachedAltitudeM = alti.getAltitude(seaLevelPressurehPa);
-
-    cachedRaw = imu.getRawSample();
+    // getMotionSample() first: it checks the data-ready bits, and any read of the
+    // output registers (getRawSample(), the near-limit checks) clears them.
     cachedMotion = imu.getMotionSample();
+    imuStatus = imu.getStatus();
+    cachedRaw = imu.getRawSample();
     cachedAccelNearLimit = imu.isAccelNearLimit();
     cachedGyroNearLimit = imu.isGyroNearLimit();
 
@@ -229,20 +246,24 @@ void sensorStartup()
 // Nothing here touches Serial — keeps this tick's timing independent of how long printing takes.
 void serviceSensors()
 {
-    altiStatus = alti.checkHealth();
-    cachedTemperatureC = alti.getTemperature();
-    rawPressurePa = alti.getPressure();
-    pressurehPa = rawPressurePa / 100;
-    cachedAltitudeM = alti.getAltitude(seaLevelPressurehPa);
+    readAltimeter();
+    if (alti.isFresh())
+        altiNewSamples++;
 
-    imuStatus = imu.checkHealth();
-    cachedRaw = imu.getRawSample();
+    // getMotionSample() first: it checks the data-ready bits, and any read of the
+    // output registers (getRawSample(), the near-limit checks) clears them.
     cachedMotion = imu.getMotionSample();
+    imuStatus = imu.getStatus();
+    if (imu.isFresh())
+        imuNewSamples++;
+    cachedRaw = imu.getRawSample();
     cachedAccelNearLimit = imu.isAccelNearLimit();
     cachedGyroNearLimit = imu.isGyroNearLimit();
 
     cachedMag = mag.getMagSample();
     magStatus = mag.getStatus();
+    if (mag.isFresh())
+        magNewSamples++;
     cachedFieldNearLimit = mag.isFieldNearLimit(cachedMag);
 
     // GNSS parsing needs frequent servicing once startup succeeds, but a failed begin()
@@ -251,6 +272,8 @@ void serviceSensors()
     {
         gnss_data = gnss.getData(gnss_data);
         gnssStatus = gnss.getStatus();
+        if (gnss.isFresh())
+            gnssNewSamples++;
         cachedGnssDiag = gnss.getHealthDiagnostics();
     }
 
@@ -273,6 +296,22 @@ void printSensorDebug()
     Serial.print("  (service rate ~");
     Serial.print(achievedServiceHz, 1);
     Serial.println(" Hz)");
+
+    // Fresh samples since the last print (PRINT_INTERVAL_MS = 1 s, so per second).
+    // Each is capped by the service rate; a sensor well below its expected rate is
+    // stalling or failing reads.
+    Serial.print("New samples/s: IMU ");
+    Serial.print(imuNewSamples);
+    Serial.print(" | baro ");
+    Serial.print(altiNewSamples);
+    Serial.print(" | mag ");
+    Serial.print(magNewSamples);
+    Serial.print(" | GNSS ");
+    Serial.println(gnssNewSamples);
+    imuNewSamples = 0;
+    altiNewSamples = 0;
+    magNewSamples = 0;
+    gnssNewSamples = 0;
 
     Serial.println("\n1. Altimeter Health Check:");
     printStatus(altiStatus);

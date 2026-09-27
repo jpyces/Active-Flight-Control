@@ -6,7 +6,7 @@ This codebase started as part of a team Model Rocket Project to learn about Guid
 
 Algorithms are designed and validated in MATLAB first (`MATLAB Design and Experimentation/`), then ported 1:1 to C++ in this repository and re-verified with native unit tests.
 
-**Milestone 1 (in progress):** hover, self-stabilization, and disturbance rejection using IMU, magnetometer, and barometer. Estimation (Madgwick + complementary filter + vertical Kalman filter), control (cascaded PID + motor mixer), and the flight state machine are ported and tested. Remaining: flight core integration, closed-loop simulation, ESC driver, logging, and system administration.
+**Milestone 1 (in progress):** hover, self-stabilization, and disturbance rejection using IMU, magnetometer, and barometer. Estimation (Madgwick + complementary filter + vertical Kalman filter), control (cascaded PID + motor mixer), and the flight state machine are ported and tested. Also implemented: timer-based command source (no radio), kill switch, touchdown detector, and a motor-test stub. Remaining for first hover: flight core integration, closed-loop simulation, ESC driver, `main.cpp` flight loop, and logging.
 
 **Milestone 2 (planned):** GNSS-aided point-to-point navigation with a joint state estimator (UKF/EKF).
 
@@ -70,7 +70,7 @@ Active-Flight-Control/
 
 Dependency direction: `Core` ← `Estimation`, `Control` ← `Flight` ← `src/main.cpp`. `Drivers` and `System` are used only by `main.cpp`; nothing in `Core`, `Estimation`, `Control`, or `Flight` depends on hardware.
 
-Module documentation: `systems/Flight/FlightStateMachine.md`.
+Module documentation: each folder under `systems/` has a `README.md` explaining its design decisions (`Core`, `Estimation`, `Control`, `Flight`, `Drivers`, `System`), plus `systems/Flight/FlightStateMachine.md` for the state machine in detail. `src/`, `include/` and `test/` have their own READMEs.
 
 ### Build and Test
 

@@ -8,7 +8,7 @@ namespace gnc
     // Pre-flight motor check run during FlightState::MotorCheck.
     //
     // STUB: spins each motor in turn (index 0..3) at spinCommand for spinTimeS,
-    // then reports Passed. It verifies nothing yet; it exists so MotorCheck
+    // then reports Passed. Verifies nothing yet; it exists so MotorCheck
     // exercises the full sequence in the SIM and on the bench. The real version
     // checks ESC RPM telemetry (bidirectional DShot) and can report Failed.
     struct MotorTestConfig

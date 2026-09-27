@@ -7,7 +7,7 @@ Determines the permitted behavior of the vehicle at each control-loop tick: boot
 | `Core/FlightState.h` | Mission states (`On` … `Flight`) |
 | `FSM/FlightStateMachine.h` | `CheckResult`, `Failsafe`, configuration/input/output structs, class declaration |
 | `FSM/FlightStateMachine.cpp` | Implementation |
-| `test/test_flightStateMachine/` | Unity test suite, 28 tests (`pio test -e native -f test_flightStateMachine`) |
+| `test/test_flightStateMachine/` | Unity test suite, 35 tests (`pio test -e native -f test_flightStateMachine`) |
 
 ---
 
@@ -141,6 +141,7 @@ All failsafe paths terminate in `Disarmed` on the ground.
 | `state` is `MotorCheck`, `Armed`, or `Flight` | true |
 | Any other state, including states added later | false |
 | `failsafe == SensorLoss` (overrides all of the above) | false |
+| `killed` (overrides all of the above) | false |
 
 Descent is commanded by the controller, selected from `out.failsafe`:
 
@@ -149,6 +150,23 @@ Descent is commanded by the controller, selected from `out.failsafe`:
 | `None` | Nominal |
 | `AhrsDegraded`, `Altitude`, `RcLoss` | Sub-hover descent with attitude control active |
 | `SensorLoss` | Not applicable; motors disabled |
+
+---
+
+## Kill
+
+`FsmInputs::kill` is an operator hard stop, normally `KillSwitch::killed()`. It is independent of the failsafe logic and takes precedence over it.
+
+| Property | Behavior |
+| --- | --- |
+| Latching | The first tick with `kill` set latches `killed`; only a reboot clears it |
+| Timing | Latched before any transition is evaluated, so a kill arriving with an arm edge never starts a motor check |
+| Effect | `MotorCheck`, `Armed` and `Flight` go to `Disarmed` on the same tick, including in the air (the only airborne disarm path) |
+| Arming | Blocked while `killed`; boot states still advance to `Disarmed` |
+| Failsafe | Still computed and reported in `out.failsafe` |
+| Output | `out.killed`, logged as `LogMode::killed` |
+
+`KillSwitch` (`KillSwitch.h`) converts a normally-closed loop on a pull-up input into this signal: loop open = kill, debounced over `debounceTicks` consecutive readings, latched. With `installed = false` the input is ignored, so the same firmware runs with or without the physical plug.
 
 ---
 
@@ -286,6 +304,6 @@ Tick 3 illustrates de-escalation only. In operation, motors are disabled at tick
 | --- | --- |
 | `BootFailed` latched state | Boot check failures are non-latching; a shared latched state is planned once a check requires hard failure |
 | Motor-loss failsafe | Requires ESC RPM telemetry (bidirectional DShot) |
-| RC hardware, manual control, airborne kill switch | Not present; `rcRequired = false` |
+| RC hardware, manual control | Not present; `rcRequired = false`. Airborne kill is provided by `kill` |
 | `flightTrigger` source | To be defined with RC hardware |
 | Touchdown detector | Separate module, not implemented |

@@ -54,6 +54,11 @@ namespace gnc
         float altitude{0.0f};
         float altitudeSetpoint{0.0f};
         bool rcValid{true};
+
+        // Operator kill (KillSwitch::killed(), or any other hard-stop source).
+        // Latched inside the FSM: forces Disarmed from any motors-live state,
+        // including Flight, and blocks arming until reboot.
+        bool kill{false};
     };
 
     // Everything the FSM asks main.cpp to do. The three request flags are one-tick
@@ -66,6 +71,7 @@ namespace gnc
         bool resetEstimator{false};  // main: estimator.reset()
         bool resetController{false}; // main: controller.reset()
         bool startMotorCheck{false}; // main: reset ESC test to Pending and start it
+        bool killed{false};          // kill latched: motors off until reboot
     };
 
     // Pure-logic flight state machine: owns no other objects. main.cpp builds
@@ -81,6 +87,7 @@ namespace gnc
 
         FlightState state() const { return m_state; }
         Failsafe failsafe() const { return m_failsafe; }
+        bool killed() const { return m_killed; }
 
     private:
         friend struct FlightStateMachineTestAccess; // test-only write access
@@ -96,6 +103,7 @@ namespace gnc
 
         FlightState m_state{FlightState::On}; // mission state
         Failsafe m_failsafe{Failsafe::None};  // recomputed from scratch every tick
+        bool m_killed{false};                 // latched by in.kill, cleared only by reboot
 
         // previous-tick values, for rising-edge detection
         bool m_armedPrev{false};

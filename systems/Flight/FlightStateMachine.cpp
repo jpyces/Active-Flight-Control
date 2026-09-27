@@ -13,6 +13,12 @@ namespace gnc
     {
         FsmOutputs out{};
 
+        // Latch first, so a kill arriving with an arm edge can't start a motor check.
+        if (in.kill)
+        {
+            m_killed = true;
+        }
+
         const bool touchdown = in.landed && !m_landedPrev;
 
         // -- 1. Which failsafes apply depends on the mission state directly.
@@ -79,6 +85,16 @@ namespace gnc
             }
         }
 
+        // -- 4b. Kill overrides everything above. It is the one path that
+        // disarms in the air: the operator has decided the vehicle must stop.
+        if (m_killed &&
+            (m_state == FlightState::MotorCheck ||
+             m_state == FlightState::Armed ||
+             m_state == FlightState::Flight))
+        {
+            m_state = FlightState::Disarmed;
+        }
+
         // Always updated, even during a failsafe: an edge that arrives while a
         // failsafe blocks it is consumed, so it can't fire late once it clears.
         m_armedPrev = in.armed;
@@ -88,6 +104,7 @@ namespace gnc
         // -- 5. Outputs. Mission state decides motors; SensorLoss kills them.
         out.state = m_state;
         out.failsafe = m_failsafe;
+        out.killed = m_killed;
 
         switch (m_state)
         {
@@ -100,9 +117,9 @@ namespace gnc
             out.motorsEnabled = false; // anything not listed, incl. future states
             break;
         }
-        if (m_failsafe == Failsafe::SensorLoss)
+        if (m_failsafe == Failsafe::SensorLoss || m_killed)
         {
-            out.motorsEnabled = false; // no attitude reference, no RC -> kill
+            out.motorsEnabled = false; // no attitude reference, or operator kill
         }
 
         return out;
@@ -151,7 +168,7 @@ namespace gnc
             break;
 
         case FlightState::Disarmed:
-            if (armRequested)
+            if (armRequested && !m_killed) // killed: stay down until reboot
             {
                 // Controller only: the estimator has been running continuously and
                 // resetting it here would discard Madgwick's mag-locked heading.

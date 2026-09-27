@@ -526,6 +526,118 @@ void test_altitude_failsafe_clears_after_touchdown_disarm()
     TEST_ASSERT_TRUE(out.failsafe == Failsafe::None);
 }
 
+// ============================================================ kill
+
+void test_kill_in_flight_disarms_immediately_even_airborne()
+{
+    FlightStateMachine fsm(makeConfig());
+    FsmInputs in = healthy();
+    bootToFlight(fsm, in); // landed == false: airborne
+
+    in.kill = true;
+    const FsmOutputs out = fsm.step(in);
+    TEST_ASSERT_TRUE(out.state == FlightState::Disarmed);
+    TEST_ASSERT_FALSE(out.motorsEnabled);
+    TEST_ASSERT_TRUE(out.killed);
+}
+
+void test_kill_in_armed_and_motor_check_disarms()
+{
+    FlightStateMachine fsm(makeConfig());
+    FsmInputs in = healthy();
+    bootToDisarmed(fsm, in);
+    disarmedToArmed(fsm, in);
+    in.kill = true;
+    TEST_ASSERT_TRUE(fsm.step(in).state == FlightState::Disarmed);
+
+    FlightStateMachine fsm2(makeConfig());
+    FsmInputs in2 = healthy();
+    bootToDisarmed(fsm2, in2);
+    in2.armed = true;
+    fsm2.step(in2); // -> MotorCheck
+    TEST_ASSERT_TRUE(fsm2.state() == FlightState::MotorCheck);
+    in2.kill = true;
+    const FsmOutputs out = fsm2.step(in2);
+    TEST_ASSERT_TRUE(out.state == FlightState::Disarmed);
+    TEST_ASSERT_FALSE(out.motorsEnabled);
+}
+
+void test_kill_is_latched_and_blocks_rearm()
+{
+    FlightStateMachine fsm(makeConfig());
+    FsmInputs in = healthy();
+    bootToFlight(fsm, in);
+    in.kill = true;
+    fsm.step(in);
+
+    // Kill input goes away (or was a one-tick pulse); vehicle lands; operator
+    // toggles arm repeatedly. Nothing re-enables the motors.
+    in.kill = false;
+    in.landed = true;
+    for (int i = 0; i < 20; ++i)
+    {
+        in.armed = false;
+        fsm.step(in);
+        in.armed = true;
+        in.motorCheck = CheckResult::Passed;
+        const FsmOutputs out = fsm.step(in);
+        TEST_ASSERT_TRUE(out.state == FlightState::Disarmed);
+        TEST_ASSERT_FALSE(out.motorsEnabled);
+        TEST_ASSERT_TRUE(out.killed);
+    }
+}
+
+void test_kill_with_arm_edge_on_same_tick_never_starts_motor_check()
+{
+    FlightStateMachine fsm(makeConfig());
+    FsmInputs in = healthy();
+    bootToDisarmed(fsm, in);
+    in.armed = true;
+    in.kill = true;
+    const FsmOutputs out = fsm.step(in);
+    TEST_ASSERT_TRUE(out.state == FlightState::Disarmed);
+    TEST_ASSERT_FALSE(out.startMotorCheck);
+    TEST_ASSERT_FALSE(out.resetController);
+}
+
+void test_kill_during_boot_lets_boot_finish_but_never_arms()
+{
+    FlightStateMachine fsm(makeConfig());
+    FsmInputs in = healthy();
+    in.kill = true; // plug missing at power-up
+    bootToDisarmed(fsm, in);
+    in.armed = true;
+    in.motorCheck = CheckResult::Passed;
+    const FsmOutputs out = stepN(fsm, in, 10);
+    TEST_ASSERT_TRUE(out.state == FlightState::Disarmed);
+    TEST_ASSERT_FALSE(out.motorsEnabled);
+}
+
+void test_kill_overrides_sensor_loss_and_reports_failsafe_independently()
+{
+    FlightStateMachine fsm(makeConfig());
+    FsmInputs in = healthy();
+    bootToFlight(fsm, in);
+    in.gyroStatus = SensorStatus::FAILED;
+    in.kill = true;
+    const FsmOutputs out = fsm.step(in);
+    TEST_ASSERT_TRUE(out.state == FlightState::Disarmed);
+    TEST_ASSERT_TRUE(out.failsafe == Failsafe::SensorLoss); // still reported
+    TEST_ASSERT_TRUE(out.killed);
+    TEST_ASSERT_FALSE(out.motorsEnabled);
+}
+
+void test_no_kill_by_default()
+{
+    FlightStateMachine fsm(makeConfig());
+    FsmInputs in = healthy();
+    bootToFlight(fsm, in);
+    const FsmOutputs out = fsm.step(in);
+    TEST_ASSERT_FALSE(out.killed);
+    TEST_ASSERT_FALSE(fsm.killed());
+    TEST_ASSERT_TRUE(out.motorsEnabled);
+}
+
 int main(int argc, char **argv)
 {
     (void)argc;
@@ -559,5 +671,12 @@ int main(int argc, char **argv)
     RUN_TEST(test_ground_ahrs_resync_breaks_the_deadlock);
     RUN_TEST(test_no_rearm_after_failsafe_disarm_until_switch_toggled);
     RUN_TEST(test_altitude_failsafe_clears_after_touchdown_disarm);
+    RUN_TEST(test_kill_in_flight_disarms_immediately_even_airborne);
+    RUN_TEST(test_kill_in_armed_and_motor_check_disarms);
+    RUN_TEST(test_kill_is_latched_and_blocks_rearm);
+    RUN_TEST(test_kill_with_arm_edge_on_same_tick_never_starts_motor_check);
+    RUN_TEST(test_kill_during_boot_lets_boot_finish_but_never_arms);
+    RUN_TEST(test_kill_overrides_sensor_loss_and_reports_failsafe_independently);
+    RUN_TEST(test_no_kill_by_default);
     return UNITY_END();
 }

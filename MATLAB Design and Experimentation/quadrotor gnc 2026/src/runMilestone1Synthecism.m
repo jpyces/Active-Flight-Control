@@ -30,7 +30,7 @@ clear; clc;
 %% Plant / physical constants (synthetic placeholders)
 mass = 1;
 g = 10;
-hoverThrust = mass * g;
+hoverThrust = mxass * g;
 maxThrust = 15;
 I = [0.01, 0.01, 0.01];
 
